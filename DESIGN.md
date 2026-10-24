@@ -24,11 +24,11 @@ Uma margem esquerda para tudo: título, texto, lista e rodapé começam em `var(
 
 ```
 +==============================================================+
-|################### tarja (--tarja) ###########################|
-|# Vinicius Belo (peso 400 na home)            Análises  Sobre #|
+|################### tarja (--tarja) da home ##################|
+|#                                                            #|
+|#  Vinicius Belo  (h1, Archivo 125%, 700)     Análises  Sobre #|  <- mesma linha de base
+|#                                                            #|
 |##############################################################|
-|                                                              |
-|   Vinicius Belo        (Archivo 125%, 700)                   |
 |                                                              |
 | ################ faixa: 3 linhas ##########                  |
 | # Estou entrando na área de análise de dados #  <- texto na  |
@@ -42,13 +42,22 @@ Uma margem esquerda para tudo: título, texto, lista e rodapé começam em `var(
 | # 05/02/2026   Título da análise   (2a linha: faixa)         |
 | ############################################                 |
 |                                                              |
-|   GitHub [LinkedIn] [E-mail]           Vinicius Belo, 2026.  |
+|   GitHub [LinkedIn] [E-mail]                                 |
+|   [Textos e análises podem ser citados...] (só com posts)    |
 +--------------------------------------------------------------+
 ```
 
+No celular (360px) o nome cabe numa linha e a navegação desce para a linha de baixo, dentro da tarja, na margem esquerda.
+
 A faixa da home é justa ao texto: largura `--medida-texto` mais o recuo dos dois lados.
 
-LinkedIn e e-mail só aparecem quando preenchidos em `src/lib/site.ts`. O nome aparece duas vezes na home (tarja e h1); na home a assinatura da tarja fica em Archivo 100%, peso 400 (classe `.discreta` em `Base.astro`); nas outras páginas, 112%/700.
+LinkedIn e e-mail só aparecem quando preenchidos em `src/lib/site.ts`.
+
+**O nome aparece visível uma vez por página, sempre na tarja.** Na home, a tarja é o título da ficha: cresce (`.topo-home`, padding `--vao` em cima e `--vao-curto` embaixo) e contém o h1 "Vinicius Belo" (`.nome`, `--t-5`, 125%) com a navegação na mesma linha de base; a folha zebrada começa `--vao` abaixo. Nas páginas internas, a tarja é baixa e a assinatura (Archivo 112%/700) é o link para a home. O h1 da home fica no `<header>` (em `Base.astro`), não no `<main>`. O rodapé não repete o nome nem tem ano: sem posts, só os contatos; com posts, também a frase sobre citação. O nome continua no `<title>`, em `author` e no `og:site_name`.
+
+Por que o nome dentro da tarja: a versão anterior (tarja só com "Sobre" à direita e o nome solto abaixo) parecia uma barra de aplicativo vazia. Numa microficha, o título é justamente o que vai escrito na tarja; o nome ali é o próprio objeto, não um enfeite.
+
+**Tarja no celular:** até 24rem os vãos da tarja e da navegação caem para 1rem, para assinatura + "Análises" + "Sobre" caberem numa linha em 360px (testado com um post publicado).
 
 ### Wireframe do artigo
 
@@ -77,6 +86,7 @@ LinkedIn e e-mail só aparecem quando preenchidos em `src/lib/site.ts`. O nome a
 | `--luz`       | `#e4e9e3` | Todo o texto. Claro acinzentado-esverdeado, não branco puro (menos ofuscamento). | 13,4 fundo; 10,4 faixa; 9,0 tarja |
 | `--luz-suave` | `#a9b6bf` | Datas, legendas, resumo, rodapé. | 7,9 fundo; 6,2 faixa; 5,3 tarja |
 | `--marca`     | `#e3c375` | Marca-texto: links, foco, seleção (fundo, com texto `--filme`), pular para o conteúdo, rascunho. | 9,7 fundo; 7,5 faixa; 6,5 tarja |
+| `--faixa-acesa` | `#244552` | Linha da lista de análises cujo link do título está sob o cursor ou com foco (a faixa "acende"). Mesmo matiz da faixa, um passo acima; não é a tarja. | 1,60:1 contra o fundo, 1,25:1 contra a faixa; `--luz` 8,3, `--luz-suave` 4,95, `--marca` 6,0 |
 
 Tudo AA (texto normal acima de 4,5:1). Dois matizes de acento com papéis separados (verde = estrutura, amarelo = ação ou marcação), nunca um acento único fazendo tudo.
 
@@ -89,7 +99,7 @@ Valores anteriores, para referência: fundo `#142030`, faixa `#1a2e36` (1,16:1, 
 ### Tipografia
 
 - **Archivo Variable** (títulos, navegação, cabeçalhos de tabela). Fallback `Arial, Helvetica, sans-serif`. Eixo de largura: 125% só no nome da home; 112% em títulos de página, de artigo, h2 e assinatura; 100% em títulos da lista, h3 de artigo e navegação.
-- **Entreletra dos títulos:** um valor só, `--aperto: -0.02em`, para h1 a h4 e para a assinatura do cabeçalho (a assinatura discreta da home volta a 0).
+- **Entreletra dos títulos:** um valor só, `--aperto: -0.02em`, para h1 a h4 e para a assinatura do cabeçalho.
 - **Título de página interna:** classe `.titulo-pagina` em `global.css` (`--t-4`, 112%, entrelinha 1.08, `margin-bottom: var(--vao-curto)`). Sobre, Análises, artigo e 404 usam a classe; nenhuma página redefine o h1.
 - **Literata Variable** (texto, tamanho óptico automático). Mantida no escuro: em tamanho de texto o eixo óptico dá hastes e serifas mais grossas e contraste baixo, o que evita a serifa fina sumindo no fundo escuro. Reforço: peso `--peso-texto: 420` e entrelinha 1.7 no corpo inteiro. Itálico só no resumo do artigo e em citações. Sem `-webkit-font-smoothing: antialiased` (afinaria o traço no macOS).
 - **Código:** pilha mono do sistema. Mono só em código, nunca em rótulos: em rótulo, mono parece tela de terminal e não combina com o tom de relatório lido com calma.
@@ -107,8 +117,10 @@ Valores anteriores, para referência: fundo `#142030`, faixa `#1a2e36` (1,16:1, 
   | `--t-5`   | clamp(2.6rem, 8vw, 4.75rem)   | nome na home                                |
 
   Tamanho solto em rem não entra: ou usa um token, ou cria um passo aqui. `em` relativo só no `code` (0.86em).
-- **Pesos da Archivo:** 400 (assinatura discreta na home), 500 (navegação), 600 (títulos na lista, cabeçalho de tabela, aviso de rascunho), 700 (todos os títulos e a assinatura). Sem 800.
+- **Pesos da Archivo:** 500 (navegação), 600 (títulos na lista, cabeçalho de tabela, aviso de rascunho), 700 (todos os títulos e a assinatura). Sem 800.
 - Números: `tabular-nums lining-nums` no corpo inteiro.
+
+**Preload:** `Base.astro` importa `@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url` e põe um `<link rel="preload" as="font" crossorigin>` em todas as páginas. É o mesmo arquivo com hash que o CSS do `@fontsource` usa (conferido no `dist/`), então não baixa duas vezes; evita o nome da home aparecer na fonte de reserva e trocar depois. Só esse arquivo: a Literata e os subconjuntos latin-ext carregam normalmente.
 
 **Por que self-host com @fontsource e não Google Fonts:** sem requisição a terceiros (LGPD), versões travadas no `package-lock.json`, funciona offline, arquivos com hash para cache longo.
 
@@ -127,6 +139,30 @@ O `<main>` não tem altura mínima: em páginas curtas, o rodapé vem logo depoi
 
 **Traço:** um só token, `--traco` (2px). Fio sob `<thead>` (`--guia`), borda de citação e de `<pre>` (2 × `--traco`, `--guia`) e `<hr>` dos artigos (`--traco` de altura, cor `--tarja`).
 
+### Movimento
+
+Pouco e com função. Tokens em `global.css`:
+
+| Token                | Valor  | Uso |
+| -------------------- | ------ | --- |
+| `--dur-curta`        | 140ms  | Resposta a hover e foco: cor do link, sublinhado correndo nos títulos da lista, faixa acesa. |
+| `--dur-ficha`        | 180ms  | Crossfade da troca de página. |
+| `--dur-varredura`    | 520ms  | Faixas da home projetadas de cima para baixo. |
+| `--atraso-varredura` | 160ms  | Início da varredura, depois de a página assentar (termina em 680ms). |
+| `--curva`            | `cubic-bezier(0.2, 0.6, 0.2, 1)` | Curva única: saída suave, sem quique. |
+
+1. **Um momento só no carregamento, só na home: a varredura.** As faixas do texto de apresentação são projetadas de cima para baixo (`clip-path` numa camada `::before` atrás do texto). O nome não anima: aparece pronto na tarja. O texto nunca se move nem fica invisível; as faixas estão numa camada própria justamente para isso. Total: 680ms. Só CSS, nada depende de script para aparecer.
+2. **Movimento que responde.** Navegação e títulos da lista usam `.traco-marca` (sublinhado de marca-texto feito de fundo); a página atual fica com o traço inteiro.
+   - **Navegação:** cor e sublinhado trocam na hora, sem transição (`nav a { transition: none }`). Itens curtos, vistos o tempo todo: a corrida só chamaria atenção para o menu.
+   - **Títulos da lista:** só aqui o traço corre da esquerda para a direita (transição de `background-size` em `ListaDePosts.astro`); em título de duas linhas, corre uma linha depois da outra.
+   - **Linha da lista:** acende (`--faixa-acesa`) só quando o link do título está em hover (`.linha:has(.titulo a:hover)`) ou quando há foco dentro (`.linha:focus-within`). Escolhido em vez de tornar a linha toda clicável com `::after`: só o título é link, então a faixa só acende com ele; o resumo continua selecionável e a área clicável é exatamente o que parece clicável.
+   - Links de texto mantêm o sublinhado e só engrossam no hover.
+   - **Todo `:hover` fica dentro de `@media (hover: hover)`** (inclusive `.traco-marca:hover`, `a:hover`, `nav a:hover`), para o toque não deixar estado preso. Foco não depende disso.
+3. **Troca de página: crossfade curto.** View Transitions entre documentos, só CSS (`@view-transition { navigation: auto; }`), sem `<ClientRouter />`: só o grupo `root`, com o fade padrão do navegador em `--dur-ficha` e `--curva`. Sem deslocamento, então ir e voltar se comportam igual. **Nenhum `view-transition-name` na tarja:** como ela entra no crossfade da página inteira, os pixels iguais ficam parados entre páginas internas, e a tarja alta da home troca com a baixa das internas por opacidade, sem esticar o texto. Navegadores sem suporte trocam de página normalmente.
+4. **`prefers-reduced-motion: reduce`.** Tudo que se move está dentro de `@media (prefers-reduced-motion: no-preference)`: varredura, transições de hover, troca de página e rolagem suave. Com `reduce`, os estados continuam visíveis (cor, sublinhado inteiro, faixa acesa, foco), só que mudam na hora.
+
+O que não entra: animação de entrada em seções, scroll-reveal, parallax, movimento contínuo ou em laço, efeito de "digitando", `steps()` imitando cintilação de leitora, desfoque ou fade de entrada em títulos.
+
 ### Zebra
 
 Regra única em `global.css`, pela classe `.zebra`: **a primeira linha fica no fundo, as pares na faixa**.
@@ -139,7 +175,7 @@ Regra única em `global.css`, pela classe `.zebra`: **a primeira linha fica no f
 ## Princípios
 
 1. **A faixa só aparece onde há linhas de dados para seguir.** Se não houver leitura em linha, não há faixa. A tarja (cabeçalho) não é faixa: é o título da ficha, num lugar só.
-2. **Uma coisa marcante, o resto sóbrio.** O que marca é o nome em Archivo largo sobre a folha zebrada da home. O resto é tipografia de leitura, uma margem esquerda, nenhum ornamento.
+2. **Uma coisa marcante, o resto sóbrio.** O que marca é o nome em Archivo largo na tarja da home, com a folha zebrada logo abaixo. O resto é tipografia de leitura, uma margem esquerda, nenhum ornamento.
 3. **Cor com função.** Verde = estrutura, amarelo = algo que se aciona ou se marca, claro = texto. Nenhuma cor decorativa. E texto como dado, não como venda: nada inventado, nenhum texto provisório publicado.
 
 ## Escolhas e alternativas consideradas
@@ -172,7 +208,7 @@ Regra única em `global.css`, pela classe `.zebra`: **a primeira linha fica no f
 | Links "Ver todos →", tags em pílulas | "Ver todas as 6 análises"; assuntos em texto corrido | O link diz o que faz; setas e pílulas só enfeitam. |
 | Destaque com número grande + rótulo, ou frase de efeito sobre "dados e insights" | Nome e duas frases honestas | Iniciante não tem números para exibir; frase de efeito soa como venda. |
 | Uma palavra do título em outra cor ou itálico | Títulos inteiros em um só tratamento | Destaque parcial chama atenção para a forma, não para o conteúdo. |
-| Animação de entrada em cada seção | Nenhuma | Distrai e atrasa a leitura. `scroll-behavior: smooth` só sem `prefers-reduced-motion`. |
+| Animação de entrada em cada seção | Um momento só, na home (faixas projetadas); o resto só responde ao usuário | Entradas espalhadas distraem e atrasam a leitura. O texto nunca espera a animação. |
 | Numeração 01/02/03 | Só no "Método" do modelo, que é sequência | Numeração só para sequência real. |
 
 ## Conteúdo publicado (o que é verdade confirmada)
@@ -187,7 +223,7 @@ Só isto pode ser afirmado até o autor escrever mais: o nome (Vinicius Belo), q
 - **Sem posts** (em produção, rascunhos não contam):
   - "Análises" sai da navegação; a página /posts/ continua existindo e mostra "Nenhuma análise publicada ainda." com link para o Sobre, sem faixa de fundo e sem prometer que algo "está sendo escrito".
   - A home não mostra a seção "Análises publicadas".
-  - O rodapé mostra só "Vinicius Belo, ano."; a frase "Textos e análises podem ser citados com link para a fonte." só aparece com posts.
+  - O rodapé mostra só os contatos (GitHub; LinkedIn e e-mail se preenchidos). Com posts, acrescenta "Textos e análises podem ser citados com link para a fonte.", sem "©" nem ano.
   - A 404 não menciona a lista de análises; oferece só a página inicial.
 - **Checador:** `npm run build` roda `scripts/checar-placeholders.mjs` depois do `astro build`. Ele falha se `dist/` tiver `SEU-PERFIL`, `exemplo.com`, texto visível começando com `[` logo após uma tag ou marcadores como `[ex.:`, `[Troque`, `[seu`, `[Escreva`, `[Preencha`. Ignora `<script>`, `<style>` e comentários (onde `[` é sintaxe).
 
@@ -205,12 +241,15 @@ Só isto pode ser afirmado até o autor escrever mais: o nome (Vinicius Belo), q
 - Código: o transformer `sem-fundo` tira o `background-color` do Shiki; o fundo vem de `.texto pre`. Sem `!important`.
 - Texto seguido de link na linha de baixo, no `.astro`: use `{' '}` antes do link. O `compressHTML` do Astro remove a quebra de linha entre texto e tag (a home já chegou a mostrar "na páginaSobre").
 - Copy: frase comum, verbo ativo, diga o que o link faz. Estados vazios dizem o que acontece e oferecem um caminho.
+- Movimento novo: só com os tokens `--dur-*` e `--curva`, dentro de `@media (prefers-reduced-motion: no-preference)`, e só em resposta ao usuário. A home já tem o único momento automático; não crie outro.
+- Nome do autor: visível uma vez por página, sempre na tarja (h1 na home, assinatura nas internas). Não repita no rodapé nem no texto das páginas (o Sobre não começa com "Sou Vinicius Belo").
+- Hover sempre dentro de `@media (hover: hover)`. Não dê `view-transition-name` a elementos que mudam de tamanho entre páginas.
 - Qualidade mínima: funciona em 360px, foco visível (`outline` 3px `--marca`), contraste AA, sem animação que ignore `prefers-reduced-motion`.
 
 ## Estrutura
 
-- `src/styles/global.css`: tokens, base, `.zebra` e `.titulo-pagina`.
-- `src/layouts/Base.astro`: head, SEO, navegação (sem "Análises" quando não há posts), rodapé.
+- `src/styles/global.css`: tokens, base, `.zebra`, `.titulo-pagina`, `.traco-marca`, keyframe da varredura e crossfade da troca de página.
+- `src/layouts/Base.astro`: head, SEO, preload da Archivo, tarja (h1 do nome na home, assinatura nas internas), navegação (sem "Análises" quando não há posts), rodapé.
 - `src/components/FraseContato.astro`: frase de contato usada na home e no Sobre.
 - `src/components/ListaDePosts.astro`: lista zebrada e estado vazio.
 - `src/lib/site.ts`: dados do autor e links. `linkedin` (URL completa) e `email` (só o endereço; o `mailto:` é montado em `emailHref`) são opcionais: vazios, não são renderizados. Também `url()` com o `base` do GitHub Pages, `getPosts()` (rascunhos só em dev), formatação de datas pt-BR.
@@ -235,7 +274,13 @@ Conteúdo e copy:
 
 Visual:
 
-- Nome em destaque duas vezes na home (cabeçalho 800 + h1).
+- Nome em destaque duas vezes na home (cabeçalho 800 + h1); depois, nome três vezes na home (assinatura discreta peso 400 na tarja, h1 e "Vinicius Belo, 2026." no rodapé). Agora: uma vez visível por página.
+- Tarja da home só com "Sobre" à direita e o h1 solto abaixo (parecia barra de aplicativo vazia). Agora o h1 está dentro da tarja.
+- "© 2026." solto no rodapé; "Sou Vinicius Belo e estou..." no Sobre (a tarja já diz o nome).
+- Nome da home saindo de desfoque (opacidade 0,35 e `blur`, token `--dur-foco`): efeito genérico de entrada que dividia a atenção com a varredura.
+- Troca de página com deslize lateral de 1,5rem (ignorava a direção de voltar) e `view-transition-name: tarja` (esticaria o texto entre a tarja alta da home e a baixa das internas).
+- Sublinhado correndo também na navegação; faixa da lista acendendo com o cursor em qualquer ponto da linha (sugeria linha clicável); `:hover` fora de `@media (hover: hover)`.
+- Movimento: `<ClientRouter />` do Astro (roteador no cliente só para animar a troca; o CSS `@view-transition` faz o mesmo sem script); fade-and-slide-up em seções; scroll-reveal; parallax; o texto de apresentação inteiro entrando por `clip-path` (deixava o texto ilegível durante a varredura).
 - Furos contados a partir do topo da tira (desalinhavam das linhas conforme a altura do h1); borda `dotted` na tira, diferente do picote.
 - Tamanhos soltos 1.2rem, 1.3rem, 0.95rem e peso 650 fora da escala documentada.
 - Zebra com a primeira linha na faixa (`odd`) em um lugar e `even` em outro.

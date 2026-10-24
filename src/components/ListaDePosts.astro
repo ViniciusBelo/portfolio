@@ -29,7 +29,7 @@ const Titulo = nivel === 2 ? 'h2' : 'h3';
 					</time>
 					<div>
 						<Titulo class="titulo">
-							<a href={url(`/posts/${post.id}/`)}>{post.data.title}</a>
+							<a class="traco-marca" href={url(`/posts/${post.id}/`)}>{post.data.title}</a>
 						</Titulo>
 						<p>{post.data.description}</p>
 						{post.data.draft && <p class="rascunho">Rascunho, visível só no modo de desenvolvimento.</p>}
@@ -55,6 +55,20 @@ const Titulo = nivel === 2 ? 'h2' : 'h3';
 		padding: 1.25rem var(--recuo-faixa);
 	}
 
+	/*
+	 * A faixa acende quando o link do título está sob o cursor ou com foco: mostra qual linha será aberta.
+	 * Só o link é clicável (a linha inteira não é), então a faixa só acende com ele; o resumo continua selecionável.
+	 */
+	.linha:focus-within {
+		background: var(--faixa-acesa);
+	}
+
+	@media (hover: hover) {
+		.linha:has(.titulo a:hover) {
+			background: var(--faixa-acesa);
+		}
+	}
+
 	time {
 		color: var(--luz-suave);
 		font-size: var(--t-0);
@@ -72,10 +86,27 @@ const Titulo = nivel === 2 ? 'h2' : 'h3';
 		text-decoration: none;
 	}
 
-	.titulo a:hover {
+	.titulo a:focus-visible {
 		color: var(--marca);
-		text-decoration: underline;
-		text-decoration-thickness: 2px;
+	}
+
+	@media (hover: hover) {
+		.titulo a:hover {
+			color: var(--marca);
+		}
+	}
+
+	/* Só aqui o traço de marca-texto corre; na navegação a troca é instantânea. */
+	@media (prefers-reduced-motion: no-preference) {
+		.linha {
+			transition: background-color var(--dur-curta) var(--curva);
+		}
+
+		.titulo a {
+			transition:
+				color var(--dur-curta) var(--curva),
+				background-size var(--dur-curta) var(--curva);
+		}
 	}
 
 	p {

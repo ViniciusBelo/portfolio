@@ -1,6 +1,9 @@
 ---
 import '../styles/global.css';
 import { SITE, emailHref, getPosts, url } from '../lib/site';
+// Arquivo da Archivo (latin, eixo de largura) usado no nome, na navegação e nos títulos.
+// Pré-carregado para o nome não trocar de fonte depois de aparecer.
+import archivoLatinWdth from '@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url';
 
 interface Props {
 	title?: string;
@@ -19,7 +22,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = image ? new URL(image, Astro.site).href : undefined;
 
 const path = Astro.url.pathname.replace(/\/$/, '');
-// Na home o h1 já é o nome em carimbo; a assinatura do cabeçalho fica em peso normal.
+// Na home o nome é o h1 dentro da tarja; nas internas, a assinatura da tarja (o nome fica visível uma vez por página).
 const naHome = path === url('/').replace(/\/$/, '');
 // Sem análise publicada, "Análises" sai da navegação e a frase sobre citação sai do rodapé.
 const temPosts = (await getPosts()).length > 0;
@@ -27,7 +30,6 @@ const nav = [
 	...(temPosts ? [{ href: url('/posts/'), label: 'Análises', match: url('/posts') }] : []),
 	{ href: url('/sobre/'), label: 'Sobre', match: url('/sobre') },
 ];
-const year = new Date().getFullYear();
 ---
 
 <!doctype html>
@@ -41,6 +43,7 @@ const year = new Date().getFullYear();
 		<link rel="canonical" href={canonical} />
 		{noindex && <meta name="robots" content="noindex" />}
 		<link rel="icon" type="image/svg+xml" href={url('/favicon.svg')} />
+		<link rel="preload" href={archivoLatinWdth} as="font" type="font/woff2" crossorigin />
 		<meta name="theme-color" content="#253e54" />
 
 		<meta property="og:type" content={type} />
@@ -57,17 +60,24 @@ const year = new Date().getFullYear();
 	<body>
 		<a class="pular" href="#conteudo">Pular para o conteúdo</a>
 
-		<header class="topo">
+		<header class:list={['topo', { 'topo-home': naHome }]}>
 			<div class="topo-linha">
-				<a class:list={['assinatura', { discreta: naHome }]} href={url('/')} aria-label={`${SITE.author}, página inicial`}>
-					{SITE.author}
-				</a>
+				{
+					naHome ? (
+						<h1 class="nome">{SITE.author}</h1>
+					) : (
+						<a class="assinatura" href={url('/')} aria-label={`${SITE.author}, página inicial`}>
+							{SITE.author}
+						</a>
+					)
+				}
 				<nav aria-label="Principal">
 					<ul>
 						{
 							nav.map((item) => (
 								<li>
 									<a
+										class="traco-marca"
 										href={item.href}
 										aria-current={path.startsWith(item.match) ? 'page' : undefined}
 									>
@@ -92,9 +102,7 @@ const year = new Date().getFullYear();
 					{SITE.links.linkedin && <li><a href={SITE.links.linkedin} rel="me">LinkedIn</a></li>}
 					{emailHref && <li><a href={emailHref}>E-mail</a></li>}
 				</ul>
-				<p>
-					{SITE.author}, {year}.{temPosts && ' Textos e análises podem ser citados com link para a fonte.'}
-				</p>
+				{temPosts && <p>Textos e análises podem ser citados com link para a fonte.</p>}
 			</div>
 		</footer>
 	</body>
@@ -113,9 +121,28 @@ const year = new Date().getFullYear();
 		gap: 0.75rem 2rem;
 	}
 
-	/* Tarja de título da microficha: a faixa legível a olho nu no topo da ficha. Só no cabeçalho. */
+	/*
+	 * Tarja de título da microficha: a faixa legível a olho nu no topo da ficha. Só no cabeçalho.
+	 * Sem view-transition-name: entra no crossfade da página inteira (ver global.css), então a tarja
+	 * alta da home e a baixa das internas trocam por opacidade, sem esticar o texto.
+	 */
 	.topo {
 		background: var(--tarja);
+	}
+
+	/*
+	 * Na home a tarja é o título da ficha: o nome (h1) e a navegação na mesma linha de base.
+	 * Abaixo dela começa a folha zebrada.
+	 */
+	.topo-home .topo-linha {
+		padding-block: var(--vao) var(--vao-curto);
+	}
+
+	.nome {
+		font-size: var(--t-5);
+		font-stretch: 125%;
+		line-height: 1;
+		overflow-wrap: break-word;
 	}
 
 	.assinatura {
@@ -128,12 +155,6 @@ const year = new Date().getFullYear();
 		letter-spacing: var(--aperto);
 	}
 
-	.assinatura.discreta {
-		font-weight: 400;
-		font-stretch: 100%;
-		letter-spacing: 0;
-	}
-
 	nav ul,
 	.contatos {
 		list-style: none;
@@ -144,6 +165,7 @@ const year = new Date().getFullYear();
 		gap: 0.25rem 1.5rem;
 	}
 
+	/* Navegação: cor e sublinhado trocam na hora (a corrida do traço fica só nos títulos da lista). */
 	nav a {
 		font-family: var(--fonte-titulo);
 		font-weight: 500;
@@ -151,13 +173,29 @@ const year = new Date().getFullYear();
 		color: var(--luz);
 		text-decoration: none;
 		padding-block: 0.2rem;
+		transition: none;
 	}
 
-	nav a:hover,
+	nav a:focus-visible,
 	nav a[aria-current='page'] {
 		color: var(--marca);
-		text-decoration: underline;
-		text-decoration-thickness: 2px;
+	}
+
+	@media (hover: hover) {
+		nav a:hover {
+			color: var(--marca);
+		}
+	}
+
+	/* Até 24rem (384px): vãos menores para nome + "Análises" + "Sobre" caberem numa linha em 360px. */
+	@media (max-width: 24rem) {
+		.topo-linha {
+			column-gap: 1rem;
+		}
+
+		nav ul {
+			column-gap: 1rem;
+		}
 	}
 
 	main {

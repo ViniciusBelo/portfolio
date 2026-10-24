@@ -9,8 +9,8 @@ const recentes = posts.slice(0, 5);
 ---
 
 <Base>
-	<section class="folha" aria-labelledby="nome">
-		<h1 id="nome">Vinicius Belo</h1>
+	{/* O nome (h1) está na tarja do cabeçalho, em Base.astro. */}
+	<div class="folha">
 		<div class="formulario">
 			<p>
 				Estou entrando na área de análise de dados. Aqui publico análises feitas do começo ao fim: a
@@ -20,7 +20,7 @@ const recentes = posts.slice(0, 5);
 				Estou aberto a vagas de entrada em análise de dados. <FraseContato />
 			</p>
 		</div>
-	</section>
+	</div>
 
 	{
 		posts.length > 0 && (
@@ -39,8 +39,8 @@ const recentes = posts.slice(0, 5);
 
 <style>
 	/*
-	 * Um quadro da microficha: o nome e o texto de apresentação impresso sobre as faixas.
-	 * O texto alinha na margem do h1; a faixa sangra --recuo-faixa para fora dos dois lados.
+	 * Um quadro da microficha: o texto de apresentação impresso sobre as faixas, logo abaixo da tarja.
+	 * O texto alinha na margem do nome; a faixa sangra --recuo-faixa para fora dos dois lados.
 	 */
 	.folha {
 		max-width: var(--pagina);
@@ -48,31 +48,43 @@ const recentes = posts.slice(0, 5);
 		padding-inline: var(--margem);
 	}
 
-	h1 {
-		font-size: var(--t-5);
-		font-weight: 700;
-		font-stretch: 125%;
-		line-height: 1;
-		padding-bottom: var(--linha);
-		overflow-wrap: break-word;
-	}
-
 	/*
 	 * Texto sobre as faixas: cada faixa cobre exatamente três linhas.
 	 * Sem padding vertical: um padding inferior abria uma faixa vazia sob o último parágrafo.
 	 */
 	.formulario {
+		position: relative;
+		isolation: isolate;
 		max-width: calc(var(--medida-texto) + 2 * var(--recuo-faixa));
 		margin-inline: calc(var(--recuo-faixa) * -1);
+		font-size: var(--t-1);
+		line-height: var(--linha);
+		padding: 0 var(--recuo-faixa);
+		padding-bottom: 0;
+	}
+
+	/* As faixas ficam numa camada própria, atrás do texto, para poderem ser projetadas sem mexer no texto. */
+	.formulario::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
 		background-image: repeating-linear-gradient(
 			to bottom,
 			var(--faixa) 0 var(--faixa-altura),
 			transparent var(--faixa-altura) calc(var(--faixa-altura) * 2)
 		);
-		font-size: var(--t-1);
-		line-height: var(--linha);
-		padding: 0 var(--recuo-faixa);
-		padding-bottom: 0;
+	}
+
+	/*
+	 * Único momento orquestrado do site, uma vez por carregamento da home (680ms no total):
+	 * as faixas descem por baixo do texto, como a ficha projetada na leitora.
+	 * O texto nunca se mexe nem fica invisível; sem CSS de movimento, tudo já está no lugar.
+	 */
+	@media (prefers-reduced-motion: no-preference) {
+		.formulario::before {
+			animation: projetar-faixas var(--dur-varredura) var(--curva) var(--atraso-varredura) both;
+		}
 	}
 
 	.formulario p {

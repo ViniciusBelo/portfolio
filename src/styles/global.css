@@ -15,6 +15,7 @@
 	--luz: #e4e9e3; /* todo o texto: 13,4:1 no fundo, 10,4:1 na faixa, 9,0:1 na tarja */
 	--luz-suave: #a9b6bf; /* datas, legendas, rodapé: 7,9:1 (6,2:1 na faixa, 5,3:1 na tarja) */
 	--marca: #e3c375; /* marca-texto: links, foco, seleção, aviso de rascunho, 9,7:1 */
+	--faixa-acesa: #244552; /* linha da lista sob o cursor/foco: 1,60:1 no fundo; luz 8,3:1, luz-suave 4,95:1, marca 6,0:1 */
 
 	/* Fontes */
 	--fonte-titulo: 'Archivo Variable', Arial, Helvetica, sans-serif;
@@ -53,6 +54,13 @@
 
 	/* Entreletra única dos títulos em Archivo */
 	--aperto: -0.02em;
+
+	/* Movimento (ver DESIGN.md). Tudo some com prefers-reduced-motion: reduce. */
+	--dur-curta: 140ms; /* resposta a hover e foco: sublinhado dos títulos da lista, faixa acesa */
+	--dur-ficha: 180ms; /* troca de página: crossfade curto de opacidade */
+	--dur-varredura: 520ms; /* faixas da home projetadas de cima para baixo */
+	--atraso-varredura: 160ms; /* a página assenta antes da varredura; termina em 680ms */
+	--curva: cubic-bezier(0.2, 0.6, 0.2, 1); /* saída suave, sem quique */
 }
 
 *,
@@ -111,8 +119,32 @@ a {
 	text-underline-offset: 0.18em;
 }
 
-a:hover {
-	text-decoration-thickness: 2px;
+@media (hover: hover) {
+	a:hover {
+		text-decoration-thickness: 2px;
+	}
+}
+
+/*
+ * Sublinhado de marca-texto feito de fundo (navegação, títulos da lista).
+ * A troca é instantânea; só os títulos da lista fazem o traço correr (transição em ListaDePosts.astro).
+ * Em título de duas linhas, o traço corre uma linha depois da outra, como quem lê.
+ * Atual (aria-current) fica sublinhado por inteiro.
+ */
+.traco-marca {
+	text-decoration: none;
+	background: linear-gradient(var(--marca), var(--marca)) no-repeat 0 100% / 0 var(--traco);
+}
+
+.traco-marca:focus-visible,
+.traco-marca[aria-current='page'] {
+	background-size: 100% var(--traco);
+}
+
+@media (hover: hover) {
+	.traco-marca:hover {
+		background-size: 100% var(--traco);
+	}
 }
 
 :focus-visible {
@@ -190,8 +222,41 @@ table.zebra thead th {
 	border-bottom: var(--traco) solid var(--guia);
 }
 
+/*
+ * Movimento: só com prefers-reduced-motion: no-preference.
+ * Com reduce, os estados mudam na hora (cor, sublinhado, faixa acesa) e nada se desloca.
+ */
 @media (prefers-reduced-motion: no-preference) {
 	html {
 		scroll-behavior: smooth;
+	}
+
+	a {
+		transition:
+			color var(--dur-curta) var(--curva),
+			text-decoration-thickness var(--dur-curta) var(--curva);
+	}
+
+	/*
+	 * Troca de página: crossfade curto de opacidade, sem deslocamento (vale para ir e para voltar).
+	 * Só o grupo root, sem view-transition-name na tarja: os pixels iguais da tarja ficam parados no
+	 * crossfade, e a tarja maior da home não é esticada até a menor das internas.
+	 * Usa as animações de fade padrão do navegador; aqui só a duração e a curva.
+	 */
+	@view-transition {
+		navigation: auto;
+	}
+
+	::view-transition-old(root),
+	::view-transition-new(root) {
+		animation-duration: var(--dur-ficha);
+		animation-timing-function: var(--curva);
+	}
+}
+
+/* Carregamento da home: as faixas são projetadas de cima para baixo. */
+@keyframes projetar-faixas {
+	from {
+		clip-path: inset(0 0 100% 0);
 	}
 }
