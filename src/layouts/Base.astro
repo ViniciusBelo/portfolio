@@ -1,0 +1,180 @@
+---
+import '../styles/global.css';
+import { SITE, emailHref, getPosts, url } from '../lib/site';
+
+interface Props {
+	title?: string;
+	description?: string;
+	/** 'article' nas páginas de post, para o Open Graph */
+	type?: 'website' | 'article';
+	image?: string;
+	noindex?: boolean;
+}
+
+const { title, description = SITE.description, type = 'website', image, noindex = false } =
+	Astro.props;
+
+const fullTitle = title ? `${title} | ${SITE.author}` : `${SITE.author}, análise de dados`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = image ? new URL(image, Astro.site).href : undefined;
+
+const path = Astro.url.pathname.replace(/\/$/, '');
+// Na home o h1 já é o nome em carimbo; a assinatura do cabeçalho fica em peso normal.
+const naHome = path === url('/').replace(/\/$/, '');
+// Sem análise publicada, "Análises" sai da navegação e a frase sobre citação sai do rodapé.
+const temPosts = (await getPosts()).length > 0;
+const nav = [
+	...(temPosts ? [{ href: url('/posts/'), label: 'Análises', match: url('/posts') }] : []),
+	{ href: url('/sobre/'), label: 'Sobre', match: url('/sobre') },
+];
+const year = new Date().getFullYear();
+---
+
+<!doctype html>
+<html lang="pt-BR">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{fullTitle}</title>
+		<meta name="description" content={description} />
+		<meta name="author" content={SITE.author} />
+		<link rel="canonical" href={canonical} />
+		{noindex && <meta name="robots" content="noindex" />}
+		<link rel="icon" type="image/svg+xml" href={url('/favicon.svg')} />
+		<meta name="theme-color" content="#253e54" />
+
+		<meta property="og:type" content={type} />
+		<meta property="og:locale" content="pt_BR" />
+		<meta property="og:site_name" content={SITE.author} />
+		<meta property="og:title" content={title ?? SITE.author} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonical} />
+		{ogImage && <meta property="og:image" content={ogImage} />}
+		<meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+
+		<meta name="generator" content={Astro.generator} />
+	</head>
+	<body>
+		<a class="pular" href="#conteudo">Pular para o conteúdo</a>
+
+		<header class="topo">
+			<div class="topo-linha">
+				<a class:list={['assinatura', { discreta: naHome }]} href={url('/')} aria-label={`${SITE.author}, página inicial`}>
+					{SITE.author}
+				</a>
+				<nav aria-label="Principal">
+					<ul>
+						{
+							nav.map((item) => (
+								<li>
+									<a
+										href={item.href}
+										aria-current={path.startsWith(item.match) ? 'page' : undefined}
+									>
+										{item.label}
+									</a>
+								</li>
+							))
+						}
+					</ul>
+				</nav>
+			</div>
+		</header>
+
+		<main id="conteudo">
+			<slot />
+		</main>
+
+		<footer class="pe">
+			<div class="pe-linha">
+				<ul class="contatos">
+					<li><a href={SITE.links.github} rel="me">GitHub</a></li>
+					{SITE.links.linkedin && <li><a href={SITE.links.linkedin} rel="me">LinkedIn</a></li>}
+					{emailHref && <li><a href={emailHref}>E-mail</a></li>}
+				</ul>
+				<p>
+					{SITE.author}, {year}.{temPosts && ' Textos e análises podem ser citados com link para a fonte.'}
+				</p>
+			</div>
+		</footer>
+	</body>
+</html>
+
+<style>
+	.topo-linha,
+	.pe-linha {
+		max-width: var(--pagina);
+		margin: 0 auto;
+		padding: 1.1rem var(--margem);
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.75rem 2rem;
+	}
+
+	/* Tarja de título da microficha: a faixa legível a olho nu no topo da ficha. Só no cabeçalho. */
+	.topo {
+		background: var(--tarja);
+	}
+
+	.assinatura {
+		font-family: var(--fonte-titulo);
+		font-weight: 700;
+		font-stretch: 112%;
+		font-size: var(--t-1);
+		color: var(--luz);
+		text-decoration: none;
+		letter-spacing: var(--aperto);
+	}
+
+	.assinatura.discreta {
+		font-weight: 400;
+		font-stretch: 100%;
+		letter-spacing: 0;
+	}
+
+	nav ul,
+	.contatos {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem 1.5rem;
+	}
+
+	nav a {
+		font-family: var(--fonte-titulo);
+		font-weight: 500;
+		font-stretch: 100%;
+		color: var(--luz);
+		text-decoration: none;
+		padding-block: 0.2rem;
+	}
+
+	nav a:hover,
+	nav a[aria-current='page'] {
+		color: var(--marca);
+		text-decoration: underline;
+		text-decoration-thickness: 2px;
+	}
+
+	main {
+		display: block;
+	}
+
+	.pe {
+		margin-top: calc(var(--vao) * 1.5);
+	}
+
+	.pe-linha {
+		padding-block: 1.5rem 2.5rem;
+		font-size: var(--t-0);
+		color: var(--luz-suave);
+	}
+
+	.pe-linha p {
+		margin: 0;
+	}
+</style>

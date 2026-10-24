@@ -1,0 +1,21 @@
+---
+/*
+ * Frase de contato que se ajusta aos canais preenchidos em src/lib/site.ts.
+ * Sem LinkedIn e sem e-mail, aponta direto para o GitHub, o único canal publicado.
+ * `comGithub`: com LinkedIn ou e-mail, acrescenta "Também estou no GitHub." (usado no Sobre).
+ */
+import { SITE, emailHref } from '../lib/site';
+
+interface Props {
+	comGithub?: boolean;
+}
+
+const { comGithub = false } = Astro.props;
+const { linkedin, github } = SITE.links;
+---
+
+{linkedin && emailHref && <>Escreva pelo <a href={linkedin}>LinkedIn</a> ou por <a href={emailHref}>e-mail</a>.</>}
+{linkedin && !emailHref && <>Escreva pelo <a href={linkedin}>LinkedIn</a>.</>}
+{!linkedin && emailHref && <>Escreva por <a href={emailHref}>e-mail</a>.</>}
+{(linkedin || emailHref) && comGithub && <>{' '}Também estou no <a href={github}>GitHub</a>.</>}
+{!linkedin && !emailHref && <>Por enquanto, o contato é pelo meu <a href={github}>perfil no GitHub</a>.</>}

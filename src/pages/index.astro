@@ -1,0 +1,101 @@
+---
+import Base from '../layouts/Base.astro';
+import ListaDePosts from '../components/ListaDePosts.astro';
+import FraseContato from '../components/FraseContato.astro';
+import { getPosts, url } from '../lib/site';
+
+const posts = await getPosts();
+const recentes = posts.slice(0, 5);
+---
+
+<Base>
+	<section class="folha" aria-labelledby="nome">
+		<h1 id="nome">Vinicius Belo</h1>
+		<div class="formulario">
+			<p>
+				Estou entrando na área de análise de dados. Aqui publico análises feitas do começo ao fim: a
+				pergunta, os dados, o método, o que encontrei e até onde o resultado vale.
+			</p>
+			<p>
+				Estou aberto a vagas de entrada em análise de dados. <FraseContato />
+			</p>
+		</div>
+	</section>
+
+	{
+		posts.length > 0 && (
+			<section class="recentes" aria-labelledby="titulo-recentes">
+				<h2 id="titulo-recentes">Análises publicadas</h2>
+				<ListaDePosts posts={recentes} nivel={3} />
+				{posts.length > recentes.length && (
+					<p class="todas">
+						<a href={url('/posts/')}>Ver todas as {posts.length} análises</a>
+					</p>
+				)}
+			</section>
+		)
+	}
+</Base>
+
+<style>
+	/*
+	 * Um quadro da microficha: o nome e o texto de apresentação impresso sobre as faixas.
+	 * O texto alinha na margem do h1; a faixa sangra --recuo-faixa para fora dos dois lados.
+	 */
+	.folha {
+		max-width: var(--pagina);
+		margin: var(--vao) auto 0;
+		padding-inline: var(--margem);
+	}
+
+	h1 {
+		font-size: var(--t-5);
+		font-weight: 700;
+		font-stretch: 125%;
+		line-height: 1;
+		padding-bottom: var(--linha);
+		overflow-wrap: break-word;
+	}
+
+	/*
+	 * Texto sobre as faixas: cada faixa cobre exatamente três linhas.
+	 * Sem padding vertical: um padding inferior abria uma faixa vazia sob o último parágrafo.
+	 */
+	.formulario {
+		max-width: calc(var(--medida-texto) + 2 * var(--recuo-faixa));
+		margin-inline: calc(var(--recuo-faixa) * -1);
+		background-image: repeating-linear-gradient(
+			to bottom,
+			var(--faixa) 0 var(--faixa-altura),
+			transparent var(--faixa-altura) calc(var(--faixa-altura) * 2)
+		);
+		font-size: var(--t-1);
+		line-height: var(--linha);
+		padding: 0 var(--recuo-faixa);
+		padding-bottom: 0;
+	}
+
+	.formulario p {
+		margin: 0 0 var(--linha);
+		max-width: var(--medida-texto);
+	}
+
+	.formulario p:last-child {
+		margin-bottom: 0;
+	}
+
+	.recentes {
+		max-width: var(--pagina);
+		margin: var(--vao) auto 0;
+		padding-inline: var(--margem);
+	}
+
+	.recentes h2 {
+		font-size: var(--t-3);
+		margin-bottom: var(--vao-curto);
+	}
+
+	.todas {
+		margin: var(--vao-curto) 0 0;
+	}
+</style>

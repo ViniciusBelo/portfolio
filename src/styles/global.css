@@ -1,0 +1,197 @@
+/*
+ * Identidade: o formulário contínuo zebrado arquivado em microficha (COM) e lido em negativo.
+ * Decisões e regras em DESIGN.md. Nenhuma cor ou fonte fora destes tokens.
+ */
+@import '@fontsource-variable/archivo/wdth.css';
+@import '@fontsource-variable/literata/opsz.css';
+@import '@fontsource-variable/literata/opsz-italic.css';
+
+:root {
+	/* Cores: microficha lida em negativo (ver DESIGN.md). Contrastes medidos sobre --filme. */
+	--filme: #11212b; /* fundo: azul-ciano de filme diazo */
+	--faixa: #1d3540; /* faixa do formulário vista no negativo, 1,28:1 contra o fundo */
+	--tarja: #253e54; /* tarja de título da ficha: cabeçalho do site e de tabela, 1,49:1 */
+	--guia: #5f9c87; /* verde de estrutura: fio de tabela, citação, código. Nunca em texto */
+	--luz: #e4e9e3; /* todo o texto: 13,4:1 no fundo, 10,4:1 na faixa, 9,0:1 na tarja */
+	--luz-suave: #a9b6bf; /* datas, legendas, rodapé: 7,9:1 (6,2:1 na faixa, 5,3:1 na tarja) */
+	--marca: #e3c375; /* marca-texto: links, foco, seleção, aviso de rascunho, 9,7:1 */
+
+	/* Fontes */
+	--fonte-titulo: 'Archivo Variable', Arial, Helvetica, sans-serif;
+	--fonte-texto: 'Literata Variable', Georgia, serif;
+	--fonte-codigo: ui-monospace, 'Cascadia Mono', Consolas, 'Liberation Mono', monospace;
+	--peso-texto: 420; /* Literata um pouco acima de 400: serifas e hastes firmes em fundo escuro */
+
+	/* Escala (quarta justa, 1.333) sobre 18px.
+	   --t-0-5 e --t-1-5 são meios passos (raiz de 1.333 = 1.155): tabelas/código e resumo. */
+	--t-0: 0.84rem;
+	--t-0-5: 0.975rem;
+	--t-1: 1.125rem;
+	--t-1-5: 1.3rem;
+	--t-2: 1.5rem;
+	--t-3: 2rem;
+	--t-4: 2.67rem;
+	--t-5: clamp(2.6rem, 8vw, 4.75rem);
+
+	/* Ritmo: a faixa do formulário cobre três linhas de texto */
+	--linha: 1.75rem;
+	--faixa-altura: calc(var(--linha) * 3);
+
+	/* Espaços verticais, derivados da linha */
+	--vao-curto: var(--linha); /* título da página ao conteúdo, título de seção à lista */
+	--vao: calc(var(--linha) * 2); /* entre o cabeçalho e a página, entre seções, antes do rodapé */
+
+	/* Medidas */
+	--medida-texto: 38rem; /* ~68 caracteres em Literata 18px */
+	--medida-larga: 52rem; /* tabelas e gráficos podem passar da coluna de texto */
+	--pagina: 60rem;
+	--margem: clamp(1rem, 4vw, 2.5rem);
+	--recuo-faixa: 1rem; /* recuo do texto dentro da faixa; a faixa sangra esse tanto para fora */
+
+	/* Traço único de estrutura (fio de tabela, borda de citação/código, <hr>) */
+	--traco: 2px;
+
+	/* Entreletra única dos títulos em Archivo */
+	--aperto: -0.02em;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	color-scheme: dark;
+	-webkit-text-size-adjust: 100%;
+}
+
+body {
+	margin: 0;
+	background: var(--filme);
+	color: var(--luz);
+	font-family: var(--fonte-texto);
+	font-weight: var(--peso-texto);
+	font-size: var(--t-1);
+	line-height: 1.7;
+	font-optical-sizing: auto;
+	font-variant-numeric: lining-nums tabular-nums;
+	text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4 {
+	font-family: var(--fonte-titulo);
+	font-weight: 700;
+	font-stretch: 112%;
+	line-height: 1.15;
+	letter-spacing: var(--aperto);
+	margin: 0;
+	text-wrap: balance;
+}
+
+/* Título de página interna (Sobre, Análises, artigo, 404) */
+.titulo-pagina {
+	font-size: var(--t-4);
+	font-stretch: 112%;
+	line-height: 1.08;
+	margin-bottom: var(--vao-curto);
+}
+
+p,
+li {
+	text-wrap: pretty;
+}
+
+a {
+	color: var(--marca);
+	text-decoration-thickness: 1px;
+	text-underline-offset: 0.18em;
+}
+
+a:hover {
+	text-decoration-thickness: 2px;
+}
+
+:focus-visible {
+	outline: 3px solid var(--marca);
+	outline-offset: 3px;
+}
+
+img {
+	max-width: 100%;
+	height: auto;
+}
+
+/* Seleção = passar o marca-texto */
+::selection {
+	background: var(--marca);
+	color: var(--filme);
+}
+
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+}
+
+.pular {
+	position: absolute;
+	left: var(--margem);
+	top: -4rem;
+	background: var(--marca);
+	color: var(--filme);
+	padding: 0.5rem 1rem;
+	z-index: 10;
+}
+
+.pular:focus {
+	top: 0.5rem;
+}
+
+/*
+ * Faixas zebradas: só onde há linhas para ler de ponta a ponta.
+ * Regra única para listas e tabelas: a primeira linha fica no fundo, as pares na faixa.
+ * Em tabelas, a classe vai no <table> (no Markdown ela é posta pelo plugin em astro.config.mjs).
+ */
+.zebra:not(table) > :nth-child(even),
+table.zebra > tbody > tr:nth-child(even) {
+	background: var(--faixa);
+}
+
+table.zebra {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: var(--t-0-5);
+	line-height: 1.4;
+}
+
+table.zebra th,
+table.zebra td {
+	padding: 0.55rem 0.9rem;
+	text-align: left;
+	vertical-align: top;
+}
+
+/* Colunas ---: do Markdown saem com style="text-align: right" inline, que vence o left acima. */
+
+table.zebra th {
+	font-family: var(--fonte-titulo);
+	font-weight: 600;
+}
+
+table.zebra thead th {
+	background: var(--tarja);
+	border-bottom: var(--traco) solid var(--guia);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	html {
+		scroll-behavior: smooth;
+	}
+}

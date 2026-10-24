@@ -1,0 +1,88 @@
+---
+import Base from '../layouts/Base.astro';
+import FraseContato from '../components/FraseContato.astro';
+import { url } from '../lib/site';
+
+/*
+ * Tabela de ferramentas: DESATIVADA até ser preenchida com informação verdadeira.
+ *
+ * Para reativar:
+ * 1. Preencha `ferramentas` abaixo. Cada linha precisa de uma análise publicada que prove o uso:
+ *    `analise` é o endereço do post (ex.: '/posts/nome-do-arquivo/'), sem o prefixo do GitHub Pages.
+ * 2. Mude MOSTRAR_FERRAMENTAS para true.
+ * Ferramenta sem análise publicada que a use não entra na tabela.
+ *
+ * Formato de cada linha:
+ *   { nome: 'Nome da ferramenta', uso: 'Para que foi usada, em uma frase', analise: '/posts/slug/' }
+ */
+const MOSTRAR_FERRAMENTAS = false;
+const ferramentas: { nome: string; uso: string; analise: string }[] = [];
+
+const mostrarFerramentas = MOSTRAR_FERRAMENTAS && ferramentas.length > 0;
+---
+
+<Base title="Sobre" description="Quem é Vinicius Belo e como falar com ele.">
+	<div class="pagina">
+		<h1 class="titulo-pagina">Sobre</h1>
+
+		<div class="texto">
+			<p>
+				Sou Vinicius Belo e estou entrando na área de análise de dados. Neste site publico as minhas
+				análises.
+			</p>
+
+			{
+				mostrarFerramentas && (
+					<>
+						<h2>Ferramentas</h2>
+						<table class="zebra">
+							<caption class="visually-hidden">
+								Ferramentas, para que foram usadas e a análise que mostra o uso
+							</caption>
+							<thead>
+								<tr>
+									<th scope="col">Ferramenta</th>
+									<th scope="col">Para que usei</th>
+								</tr>
+							</thead>
+							<tbody>
+								{ferramentas.map((f) => (
+									<tr>
+										<th scope="row">{f.nome}</th>
+										<td>
+											{f.uso} <a href={url(f.analise)}>Ver a análise</a>.
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</>
+				)
+			}
+
+			<h2>Contato</h2>
+			<p>
+				Estou aberto a vagas de entrada em análise de dados e a conversas sobre as análises.{' '}
+				<FraseContato comGithub />
+			</p>
+		</div>
+	</div>
+</Base>
+
+<style>
+	.pagina {
+		max-width: var(--medida-texto);
+		margin: var(--vao) auto 0;
+		padding-inline: var(--margem);
+		box-sizing: content-box;
+	}
+
+	h2 {
+		font-size: var(--t-2);
+		margin: var(--vao) 0 calc(var(--vao-curto) / 2);
+	}
+
+	p {
+		margin: 0 0 1.25em;
+	}
+</style>

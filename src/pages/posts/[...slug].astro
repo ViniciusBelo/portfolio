@@ -1,0 +1,217 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { formatDate, getPosts, url } from '../../lib/site';
+
+export const getStaticPaths = (async () => {
+	const posts = await getPosts();
+	return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}) satisfies GetStaticPaths;
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const { title, description, date, tags, draft, cover, coverAlt } = post.data;
+---
+
+<Base title={title} description={description} type="article" image={cover?.src} noindex={draft}>
+	<article class="artigo">
+		<header class="cabecalho">
+			{draft && <p class="rascunho">Rascunho. Este texto não entra no site publicado.</p>}
+			<h1 class="titulo-pagina">{title}</h1>
+			<p class="resumo">{description}</p>
+			<p class="dados">
+				Publicado em <time datetime={date.toISOString()}>{formatDate(date)}</time>.
+				{tags.length > 0 && <span>Assuntos: {tags.join(', ')}.</span>}
+			</p>
+		</header>
+
+		{
+			cover && (
+				<figure class="capa">
+					<Image src={cover} alt={coverAlt ?? ''} widths={[640, 960, 1280]} sizes="(max-width: 52rem) 100vw, 52rem" />
+				</figure>
+			)
+		}
+
+		<div class="texto">
+			<Content />
+		</div>
+
+		<footer class="fim">
+			<p><a href={url('/posts/')}>Voltar para a lista de análises</a></p>
+		</footer>
+	</article>
+</Base>
+
+<style>
+	.artigo {
+		max-width: var(--medida-larga);
+		margin: var(--vao) auto 0;
+		padding-inline: var(--margem);
+	}
+
+	.cabecalho,
+	.fim {
+		max-width: var(--medida-texto);
+		margin-inline: auto;
+	}
+
+	.rascunho {
+		color: var(--marca);
+		font-weight: 600;
+		margin: 0 0 1rem;
+	}
+
+	.resumo {
+		font-size: var(--t-1-5);
+		line-height: 1.5;
+		font-style: italic;
+		color: var(--luz-suave);
+		margin: 0;
+	}
+
+	.dados {
+		margin: 1.25rem 0 0;
+		color: var(--luz-suave);
+		font-size: var(--t-0);
+	}
+
+	.dados span {
+		display: block;
+	}
+
+	.capa {
+		margin: 2.5rem 0 0;
+	}
+
+	.capa :global(img) {
+		display: block;
+		width: 100%;
+	}
+
+	.fim {
+		margin-top: 4rem;
+	}
+
+	/* ---------- Texto longo (Markdown) ---------- */
+
+	.texto {
+		margin-top: 3rem;
+		line-height: 1.7;
+	}
+
+	/* Tudo na coluna de leitura; tabelas, gráficos e código podem usar a largura toda */
+	.texto > :global(*) {
+		max-width: var(--medida-texto);
+		margin-inline: auto;
+	}
+
+	.texto > :global(table),
+	.texto > :global(pre),
+	.texto > :global(figure),
+	.texto > :global(p:has(> img)) {
+		max-width: var(--medida-larga);
+	}
+
+	.texto :global(p),
+	.texto :global(ul),
+	.texto :global(ol),
+	.texto :global(blockquote) {
+		margin-block: 0 1.25em;
+	}
+
+	.texto :global(h2) {
+		font-size: var(--t-3);
+		font-stretch: 112%;
+		margin-block: 3rem 1rem;
+	}
+
+	.texto :global(h3) {
+		font-size: var(--t-2);
+		font-stretch: 100%;
+		margin-block: 2.25rem 0.75rem;
+	}
+
+	.texto :global(li + li) {
+		margin-top: 0.35em;
+	}
+
+	.texto :global(blockquote) {
+		padding: 0.25rem 0 0.25rem 1.25rem;
+		border-left: calc(var(--traco) * 2) solid var(--guia);
+		font-style: italic;
+	}
+
+	.texto :global(hr) {
+		border: 0;
+		margin-block: 3rem;
+		height: var(--traco);
+		background: var(--tarja);
+	}
+
+	/*
+	 * Tabelas: o formulário zebrado existe para isto, ler linhas longas sem perder a linha.
+	 * Faixas, células e cabeçalho vêm de `table.zebra` em global.css (a classe é posta pelo
+	 * plugin em astro.config.mjs). Aqui só a rolagem horizontal e o espaçamento.
+	 */
+	.texto :global(table) {
+		display: block;
+		overflow-x: auto;
+		margin-block: 2rem;
+	}
+
+	.texto :global(caption) {
+		caption-side: bottom;
+		text-align: left;
+		padding-top: 0.6rem;
+		color: var(--luz-suave);
+		font-size: var(--t-0);
+	}
+
+	/* Código */
+	.texto :global(code) {
+		font-family: var(--fonte-codigo);
+		font-size: 0.86em;
+	}
+
+	.texto :global(:not(pre) > code) {
+		background: var(--faixa);
+		padding: 0.1em 0.3em;
+	}
+
+	/* O Shiki não grava fundo no <pre> (transformer em astro.config.mjs); o fundo é o do filme. */
+	.texto :global(pre) {
+		background: var(--filme);
+		border-left: calc(var(--traco) * 2) solid var(--guia);
+		padding: 1rem 1.25rem;
+		overflow-x: auto;
+		line-height: 1.55;
+		margin-block: 0 1.5rem;
+		font-size: var(--t-0-5);
+	}
+
+	/* Imagens de gráficos */
+	.texto :global(img) {
+		display: block;
+		margin-inline: auto;
+	}
+
+	.texto :global(figure) {
+		margin-block: 2rem;
+	}
+
+	/*
+	 * Legenda: o modelo usa a imagem em Markdown com a linha em itálico logo abaixo. O Markdown
+	 * junta as duas no mesmo <p> (img + em); com linha em branco entre elas, viram dois <p>.
+	 */
+	.texto :global(figcaption),
+	.texto :global(p > img + em),
+	.texto :global(p:has(> img:only-child) + p > em:only-child) {
+		display: block;
+		color: var(--luz-suave);
+		font-size: var(--t-0);
+		margin-top: 0.6rem;
+	}
+</style>

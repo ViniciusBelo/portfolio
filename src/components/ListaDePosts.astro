@@ -1,0 +1,104 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { formatDate, formatShortDate, url } from '../lib/site';
+
+interface Props {
+	posts: CollectionEntry<'posts'>[];
+	/** Nível do título de cada análise (h2 na lista, h3 na home) */
+	nivel?: 2 | 3;
+}
+
+const { posts, nivel = 2 } = Astro.props;
+const Titulo = nivel === 2 ? 'h2' : 'h3';
+---
+
+{
+	posts.length === 0 ? (
+		<div class="vazio">
+			<p>Nenhuma análise publicada ainda.</p>
+			<p>
+				Para saber quem escreve aqui, veja a página <a href={url('/sobre/')}>Sobre</a>.
+			</p>
+		</div>
+	) : (
+		<ol class="lista zebra" reversed>
+			{posts.map((post) => (
+				<li class="linha">
+					<time datetime={post.data.date.toISOString()} title={formatDate(post.data.date)}>
+						{formatShortDate(post.data.date)}
+					</time>
+					<div>
+						<Titulo class="titulo">
+							<a href={url(`/posts/${post.id}/`)}>{post.data.title}</a>
+						</Titulo>
+						<p>{post.data.description}</p>
+						{post.data.draft && <p class="rascunho">Rascunho, visível só no modo de desenvolvimento.</p>}
+					</div>
+				</li>
+			))}
+		</ol>
+	)
+}
+
+<style>
+	/* O texto das linhas alinha na margem do título; a faixa sangra --recuo-faixa para fora. */
+	.lista {
+		list-style: none;
+		margin: 0 calc(var(--recuo-faixa) * -1);
+		padding: 0;
+	}
+
+	.linha {
+		display: grid;
+		grid-template-columns: 7.5rem 1fr;
+		gap: 0.25rem 1.5rem;
+		padding: 1.25rem var(--recuo-faixa);
+	}
+
+	time {
+		color: var(--luz-suave);
+		font-size: var(--t-0);
+		padding-top: 0.3rem;
+	}
+
+	.titulo {
+		font-size: var(--t-2);
+		font-stretch: 100%;
+		font-weight: 600;
+	}
+
+	.titulo a {
+		color: var(--luz);
+		text-decoration: none;
+	}
+
+	.titulo a:hover {
+		color: var(--marca);
+		text-decoration: underline;
+		text-decoration-thickness: 2px;
+	}
+
+	p {
+		margin: 0.35rem 0 0;
+		max-width: var(--medida-texto);
+	}
+
+	.rascunho {
+		color: var(--marca);
+		font-size: var(--t-0);
+	}
+
+	.vazio p:first-child {
+		margin-top: 0;
+	}
+
+	@media (max-width: 34rem) {
+		.linha {
+			grid-template-columns: 1fr;
+		}
+
+		time {
+			padding-top: 0;
+		}
+	}
+</style>

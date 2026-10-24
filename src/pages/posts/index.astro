@@ -1,0 +1,25 @@
+---
+import Base from '../../layouts/Base.astro';
+import ListaDePosts from '../../components/ListaDePosts.astro';
+import { getPosts } from '../../lib/site';
+
+const posts = await getPosts();
+---
+
+<Base
+	title="Análises"
+	description="Análises de dados publicadas por Vinicius Belo."
+>
+	<div class="pagina">
+		<h1 class="titulo-pagina">Análises</h1>
+		<ListaDePosts posts={posts} />
+	</div>
+</Base>
+
+<style>
+	.pagina {
+		max-width: var(--pagina);
+		margin: var(--vao) auto 0;
+		padding-inline: var(--margem);
+	}
+</style>

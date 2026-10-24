@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Cores fixas (arquivo estático, fora dos tokens): filme #11212b, faixa reforçada #2f4a57,
+       tarja #253e54, luz #e4e9e3, marca #e3c375. A faixa é mais clara que --faixa para aparecer
+       em 16px. Um quadro de microficha: tarja de título no topo, linhas zebradas, uma linha
+       passada com o marca-texto. -->
+  <rect width="32" height="32" fill="#11212b"/>
+  <rect width="32" height="8" fill="#253e54"/>
+  <rect x="5" y="3" width="13" height="2.5" fill="#e4e9e3"/>
+  <rect x="0" y="12" width="32" height="6" fill="#2f4a57"/>
+  <rect x="0" y="24" width="32" height="6" fill="#2f4a57"/>
+  <rect x="5" y="19.5" width="22" height="3" fill="#e3c375"/>
+  <rect x="5" y="13.5" width="16" height="3" fill="#e4e9e3"/>
+  <rect x="5" y="25.5" width="19" height="3" fill="#e4e9e3"/>
+</svg>

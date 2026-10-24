@@ -1,0 +1,38 @@
+---
+import Base from '../layouts/Base.astro';
+import { getPosts, url } from '../lib/site';
+
+const temPosts = (await getPosts()).length > 0;
+---
+
+<Base title="Página não encontrada" noindex>
+	<div class="pagina">
+		<h1 class="titulo-pagina">Esta página não existe</h1>
+		{
+			temPosts ? (
+				<p>
+					O endereço pode ter sido digitado errado ou a análise mudou de lugar. Todas as análises
+					publicadas estão na <a href={url('/posts/')}>lista de análises</a>; você também pode voltar
+					para a <a href={url('/')}>página inicial</a>.
+				</p>
+			) : (
+				<p>
+					O endereço pode ter sido digitado errado. Volte para a <a href={url('/')}>página inicial</a>.
+				</p>
+			)
+		}
+	</div>
+</Base>
+
+<style>
+	.pagina {
+		max-width: var(--medida-texto);
+		margin: var(--vao) auto 0;
+		padding-inline: var(--margem);
+		box-sizing: content-box;
+	}
+
+	p {
+		margin: 0;
+	}
+</style>
