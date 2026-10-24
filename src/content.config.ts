@@ -17,4 +17,31 @@ const posts = defineCollection({
 		}),
 });
 
-export const collections = { posts };
+/**
+ * Projetos (repositórios no GitHub). Um arquivo .md por projeto em src/content/projetos/.
+ * O corpo do arquivo vira a lista de perguntas do cartão. Ver README.md.
+ */
+const projetos = defineCollection({
+	loader: glob({ pattern: '**/*.md', base: './src/content/projetos' }),
+	schema: z.object({
+		title: z.string(),
+		description: z.string(),
+		repo: z.string().url(),
+		status: z.enum(['concluido', 'em-andamento']),
+		ferramentas: z.array(z.string()).default([]),
+		/** Menor aparece primeiro. */
+		ordem: z.number().default(100),
+		/** Cartão largo, com o progresso desenhado. Use em um projeto só. */
+		destaque: z.boolean().default(false),
+		/** Data de referência (última atualização do repositório). Desempata a ordem. */
+		date: z.coerce.date(),
+		/** Etapas do projeto, na ordem; `feita: true` nas concluídas. Opcional. */
+		etapas: z.array(z.object({ nome: z.string(), feita: z.boolean().default(false) })).optional(),
+		/** Frase opcional sobre o que falta além das etapas. */
+		falta: z.string().optional(),
+		/** Rascunho: só aparece em `npm run dev`. */
+		draft: z.boolean().default(false),
+	}),
+});
+
+export const collections = { posts, projetos };

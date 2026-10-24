@@ -1,6 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import { formatDate, formatShortDate, url } from '../lib/site';
+import { SITE, formatDate, url } from '../lib/site';
 
 interface Props {
 	posts: CollectionEntry<'posts'>[];
@@ -14,104 +14,61 @@ const Titulo = nivel === 2 ? 'h2' : 'h3';
 
 {
 	posts.length === 0 ? (
-		<div class="vazio">
-			<p>Nenhuma análise publicada ainda.</p>
-			<p>
-				Para saber quem escreve aqui, veja a página <a href={url('/sobre/')}>Sobre</a>.
-			</p>
+		<div class="cartao vazio">
+			{/* Um plano sem nenhum ponto: a contagem real de análises publicadas. */}
+			<div class="plano" aria-hidden="true">
+				<span>n = 0</span>
+			</div>
+			<div>
+				<p>Nenhuma análise publicada ainda.</p>
+				<p>
+					Enquanto isso, veja o meu <a href={SITE.links.github}>perfil no GitHub</a>.
+				</p>
+			</div>
 		</div>
 	) : (
-		<ol class="lista zebra" reversed>
+		<ol class="cartoes" reversed>
 			{posts.map((post) => (
-				<li class="linha">
-					<time datetime={post.data.date.toISOString()} title={formatDate(post.data.date)}>
-						{formatShortDate(post.data.date)}
-					</time>
-					<div>
-						<Titulo class="titulo">
-							<a class="traco-marca" href={url(`/posts/${post.id}/`)}>{post.data.title}</a>
-						</Titulo>
-						<p>{post.data.description}</p>
-						{post.data.draft && <p class="rascunho">Rascunho, visível só no modo de desenvolvimento.</p>}
-					</div>
+				<li class="cartao">
+					<Titulo class="cartao-titulo">
+						<a class="cartao-link traco-marca" href={url(`/posts/${post.id}/`)}>
+							{post.data.title}
+						</a>
+					</Titulo>
+					<p>{post.data.description}</p>
+					<p class="dados">
+						<time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+						{post.data.tags.length > 0 && <>. Assuntos: {post.data.tags.join(', ')}.</>}
+					</p>
+					{post.data.draft && <p class="rascunho">Rascunho, visível só no modo de desenvolvimento.</p>}
 				</li>
 			))}
 		</ol>
 	)
 }
 
+<script>
+	import { ligarGrade } from '../scripts/grade';
+	ligarGrade();
+</script>
+
 <style>
-	/* O texto das linhas alinha na margem do título; a faixa sangra --recuo-faixa para fora. */
-	.lista {
+	.cartoes {
 		list-style: none;
-		margin: 0 calc(var(--recuo-faixa) * -1);
+		margin: 0;
 		padding: 0;
-	}
-
-	.linha {
 		display: grid;
-		grid-template-columns: 7.5rem 1fr;
-		gap: 0.25rem 1.5rem;
-		padding: 1.25rem var(--recuo-faixa);
-	}
-
-	/*
-	 * A faixa acende quando o link do título está sob o cursor ou com foco: mostra qual linha será aberta.
-	 * Só o link é clicável (a linha inteira não é), então a faixa só acende com ele; o resumo continua selecionável.
-	 */
-	.linha:focus-within {
-		background: var(--faixa-acesa);
-	}
-
-	@media (hover: hover) {
-		.linha:has(.titulo a:hover) {
-			background: var(--faixa-acesa);
-		}
-	}
-
-	time {
-		color: var(--luz-suave);
-		font-size: var(--t-0);
-		padding-top: 0.3rem;
-	}
-
-	.titulo {
-		font-size: var(--t-2);
-		font-stretch: 100%;
-		font-weight: 600;
-	}
-
-	.titulo a {
-		color: var(--luz);
-		text-decoration: none;
-	}
-
-	.titulo a:focus-visible {
-		color: var(--marca);
-	}
-
-	@media (hover: hover) {
-		.titulo a:hover {
-			color: var(--marca);
-		}
-	}
-
-	/* Só aqui o traço de marca-texto corre; na navegação a troca é instantânea. */
-	@media (prefers-reduced-motion: no-preference) {
-		.linha {
-			transition: background-color var(--dur-curta) var(--curva);
-		}
-
-		.titulo a {
-			transition:
-				color var(--dur-curta) var(--curva),
-				background-size var(--dur-curta) var(--curva);
-		}
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+		gap: 1.25rem;
 	}
 
 	p {
-		margin: 0.35rem 0 0;
-		max-width: var(--medida-texto);
+		margin: 0.5rem 0 0;
+	}
+
+	.dados {
+		color: var(--texto-suave);
+		font-size: var(--t-0);
 	}
 
 	.rascunho {
@@ -119,17 +76,31 @@ const Titulo = nivel === 2 ? 'h2' : 'h3';
 		font-size: var(--t-0);
 	}
 
-	.vazio p:first-child {
-		margin-top: 0;
+	/* Estado vazio: um plano com eixos e nenhum ponto. */
+	.vazio {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 1.25rem 2rem;
+		max-width: var(--medida-larga);
 	}
 
-	@media (max-width: 34rem) {
-		.linha {
-			grid-template-columns: 1fr;
-		}
+	.vazio p:first-child {
+		margin-top: 0;
+		font-family: var(--fonte-titulo);
+		font-weight: 600;
+		font-size: var(--t-1-5);
+	}
 
-		time {
-			padding-top: 0;
-		}
+	.plano {
+		width: 9rem;
+		height: 6rem;
+		border-left: var(--traco) solid var(--eixo);
+		border-bottom: var(--traco) solid var(--eixo);
+		display: grid;
+		place-items: center;
+		font-family: var(--fonte-titulo);
+		font-size: var(--t-0);
+		color: var(--texto-suave);
 	}
 </style>

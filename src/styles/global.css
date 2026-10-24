@@ -1,5 +1,6 @@
 /*
- * Identidade: o formulário contínuo zebrado arquivado em microficha (COM) e lido em negativo.
+ * Identidade: o gráfico de dispersão vivo. O site é um plano cartesiano escuro onde os dados
+ * se mexem, o cursor é a mira de leitura do gráfico e cada animação é uma operação com dados.
  * Decisões e regras em DESIGN.md. Nenhuma cor ou fonte fora destes tokens.
  */
 @import '@fontsource-variable/archivo/wdth.css';
@@ -7,24 +8,26 @@
 @import '@fontsource-variable/literata/opsz-italic.css';
 
 :root {
-	/* Cores: microficha lida em negativo (ver DESIGN.md). Contrastes medidos sobre --filme. */
-	--filme: #11212b; /* fundo: azul-ciano de filme diazo */
-	--faixa: #1d3540; /* faixa do formulário vista no negativo, 1,28:1 contra o fundo */
-	--tarja: #253e54; /* tarja de título da ficha: cabeçalho do site e de tabela, 1,49:1 */
-	--guia: #5f9c87; /* verde de estrutura: fio de tabela, citação, código. Nunca em texto */
-	--luz: #e4e9e3; /* todo o texto: 13,4:1 no fundo, 10,4:1 na faixa, 9,0:1 na tarja */
-	--luz-suave: #a9b6bf; /* datas, legendas, rodapé: 7,9:1 (6,2:1 na faixa, 5,3:1 na tarja) */
-	--marca: #e3c375; /* marca-texto: links, foco, seleção, aviso de rascunho, 9,7:1 */
-	--faixa-acesa: #244552; /* linha da lista sob o cursor/foco: 1,60:1 no fundo; luz 8,3:1, luz-suave 4,95:1, marca 6,0:1 */
+	/* Cores (contrastes medidos sobre --fundo; ver DESIGN.md) */
+	--fundo: #0f1f28; /* petróleo: o fundo do plano */
+	--superficie: #162c37; /* cartões, linhas pares de tabela, código em linha */
+	--grade: #2c4a58; /* linhas de grade e bordas de cartão, 1,8:1. Nunca em texto */
+	--eixo: #5d7d8a; /* eixos, fios de tabela, citação, código: 3,8:1 (elemento não textual). Nunca em texto */
+	--texto: #e7ecea; /* todo o texto: 14,1:1 no fundo, 12,1:1 na superfície */
+	--texto-suave: #9fb2bb; /* datas, legendas, rodapé: 7,7:1 no fundo, 6,6:1 na superfície */
+	--ponto-azul: #6cc4d4; /* os dados: pontos, barras, números de etapa. 8,4:1 */
+	--ponto: var(--ponto-azul); /* cor da série em uso (azul, lilás ou verde) */
+	--marca: #ecc76e; /* o que se aciona ou se mede: links, foco, cursor, reta ajustada. 10,4:1 */
+	--ponto-lilas: #b3a3f5; /* cores alternativas da série, escolhidas na legenda da home */
+	--ponto-verde: #86d39b;
 
 	/* Fontes */
 	--fonte-titulo: 'Archivo Variable', Arial, Helvetica, sans-serif;
 	--fonte-texto: 'Literata Variable', Georgia, serif;
 	--fonte-codigo: ui-monospace, 'Cascadia Mono', Consolas, 'Liberation Mono', monospace;
-	--peso-texto: 420; /* Literata um pouco acima de 400: serifas e hastes firmes em fundo escuro */
+	--peso-texto: 420; /* Literata um pouco acima de 400: hastes firmes em fundo escuro */
 
-	/* Escala (quarta justa, 1.333) sobre 18px.
-	   --t-0-5 e --t-1-5 são meios passos (raiz de 1.333 = 1.155): tabelas/código e resumo. */
+	/* Escala (quarta justa, 1.333) sobre 18px; --t-0-5 e --t-1-5 são meios passos */
 	--t-0: 0.84rem;
 	--t-0-5: 0.975rem;
 	--t-1: 1.125rem;
@@ -32,35 +35,41 @@
 	--t-2: 1.5rem;
 	--t-3: 2rem;
 	--t-4: 2.67rem;
-	--t-5: clamp(2.6rem, 8vw, 4.75rem);
+	--t-6: clamp(2.9rem, 7.2vw, 5.4rem); /* o nome no gráfico da home (abertura compacta: os projetos vêm logo abaixo) */
 
-	/* Ritmo: a faixa do formulário cobre três linhas de texto */
+	/* Ritmo */
 	--linha: 1.75rem;
-	--faixa-altura: calc(var(--linha) * 3);
-
-	/* Espaços verticais, derivados da linha */
-	--vao-curto: var(--linha); /* título da página ao conteúdo, título de seção à lista */
-	--vao: calc(var(--linha) * 2); /* entre o cabeçalho e a página, entre seções, antes do rodapé */
+	--vao-curto: var(--linha);
+	--vao: calc(var(--linha) * 2);
+	--vao-largo: calc(var(--linha) * 4); /* entre as seções da home */
 
 	/* Medidas */
 	--medida-texto: 38rem; /* ~68 caracteres em Literata 18px */
-	--medida-larga: 52rem; /* tabelas e gráficos podem passar da coluna de texto */
-	--pagina: 60rem;
+	--medida-larga: 52rem;
+	--pagina: 72rem;
 	--margem: clamp(1rem, 4vw, 2.5rem);
-	--recuo-faixa: 1rem; /* recuo do texto dentro da faixa; a faixa sangra esse tanto para fora */
+	--raio: 6px; /* só cartões e botões; o resto é reto */
 
-	/* Traço único de estrutura (fio de tabela, borda de citação/código, <hr>) */
+	/* Traço único de estrutura */
 	--traco: 2px;
-
-	/* Entreletra única dos títulos em Archivo */
 	--aperto: -0.02em;
 
-	/* Movimento (ver DESIGN.md). Tudo some com prefers-reduced-motion: reduce. */
-	--dur-curta: 140ms; /* resposta a hover e foco: sublinhado dos títulos da lista, faixa acesa */
-	--dur-ficha: 180ms; /* troca de página: crossfade curto de opacidade */
-	--dur-varredura: 520ms; /* faixas da home projetadas de cima para baixo */
-	--atraso-varredura: 160ms; /* a página assenta antes da varredura; termina em 680ms */
-	--curva: cubic-bezier(0.2, 0.6, 0.2, 1); /* saída suave, sem quique */
+	/* Movimento (ver DESIGN.md). Tudo fica parado com prefers-reduced-motion: reduce. */
+	--dur-curta: 140ms; /* resposta a hover e foco */
+	--dur-media: 320ms; /* barras das letras, troca de página */
+	--dur-entrada: 620ms; /* cada letra e cada etapa entrando */
+	--passo-letra: 48ms; /* atraso entre letras do nome */
+	--curva: cubic-bezier(0.2, 0.6, 0.2, 1); /* saída suave */
+	--curva-mola: cubic-bezier(0.3, 1.35, 0.5, 1); /* passa um pouco e volta: barra assentando */
+}
+
+/* Cor da série escolhida na legenda do gráfico da home (guardada no navegador) */
+html[data-serie='lilas'] {
+	--ponto: var(--ponto-lilas);
+}
+
+html[data-serie='verde'] {
+	--ponto: var(--ponto-verde);
 }
 
 *,
@@ -72,12 +81,13 @@
 html {
 	color-scheme: dark;
 	-webkit-text-size-adjust: 100%;
+	background: var(--fundo);
 }
 
 body {
 	margin: 0;
-	background: var(--filme);
-	color: var(--luz);
+	background: var(--fundo);
+	color: var(--texto);
 	font-family: var(--fonte-texto);
 	font-weight: var(--peso-texto);
 	font-size: var(--t-1);
@@ -106,6 +116,27 @@ h4 {
 	font-stretch: 112%;
 	line-height: 1.08;
 	margin-bottom: var(--vao-curto);
+	/* O mesmo eixo do nome da home: o título se apoia numa linha de base. */
+	padding-bottom: 0.2em;
+	background: linear-gradient(var(--eixo), var(--eixo)) no-repeat 0 100% / 3em var(--traco);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.titulo-pagina {
+		animation: eixo-titulo var(--dur-entrada) var(--curva) 120ms backwards;
+	}
+}
+
+@keyframes eixo-titulo {
+	from {
+		background-size: 0 var(--traco);
+	}
+}
+
+/* Título de seção da home e do Sobre */
+.titulo-secao {
+	font-size: var(--t-3);
+	margin-bottom: var(--vao-curto);
 }
 
 p,
@@ -125,12 +156,7 @@ a {
 	}
 }
 
-/*
- * Sublinhado de marca-texto feito de fundo (navegação, títulos da lista).
- * A troca é instantânea; só os títulos da lista fazem o traço correr (transição em ListaDePosts.astro).
- * Em título de duas linhas, o traço corre uma linha depois da outra, como quem lê.
- * Atual (aria-current) fica sublinhado por inteiro.
- */
+/* Sublinhado de marca-texto feito de fundo (navegação, títulos de cartão). Atual fica inteiro. */
 .traco-marca {
 	text-decoration: none;
 	background: linear-gradient(var(--marca), var(--marca)) no-repeat 0 100% / 0 var(--traco);
@@ -157,10 +183,9 @@ img {
 	height: auto;
 }
 
-/* Seleção = passar o marca-texto */
 ::selection {
 	background: var(--marca);
-	color: var(--filme);
+	color: var(--fundo);
 }
 
 .visually-hidden {
@@ -177,9 +202,9 @@ img {
 	left: var(--margem);
 	top: -4rem;
 	background: var(--marca);
-	color: var(--filme);
+	color: var(--fundo);
 	padding: 0.5rem 1rem;
-	z-index: 10;
+	z-index: 30;
 }
 
 .pular:focus {
@@ -187,13 +212,95 @@ img {
 }
 
 /*
- * Faixas zebradas: só onde há linhas para ler de ponta a ponta.
- * Regra única para listas e tabelas: a primeira linha fica no fundo, as pares na faixa.
- * Em tabelas, a classe vai no <table> (no Markdown ela é posta pelo plugin em astro.config.mjs).
+ * Cartão-plano (análises e projetos): superfície com borda de grade; sob o mouse a grade do plano
+ * acende em volta do cursor (src/scripts/grade.ts). O link do título cobre o cartão inteiro.
  */
-.zebra:not(table) > :nth-child(even),
+.cartao {
+	position: relative;
+	isolation: isolate;
+	padding: 1.25rem 1.25rem 1.5rem;
+	background: var(--superficie);
+	border: 1px solid var(--grade);
+	border-radius: var(--raio);
+	overflow: hidden;
+}
+
+.cartao::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	background-image:
+		linear-gradient(var(--grade) 1px, transparent 1px),
+		linear-gradient(90deg, var(--grade) 1px, transparent 1px);
+	background-size: 1.5rem 1.5rem;
+	mask-image: radial-gradient(circle 9rem at var(--mx, 50%) var(--my, 50%), #000, transparent);
+	opacity: 0;
+}
+
+/* Foco: o contorno vai no cartão inteiro, que é a área clicável. */
+.cartao:has(.cartao-link:focus-visible) {
+	outline: 3px solid var(--marca);
+	outline-offset: 3px;
+}
+
+.cartao-titulo {
+	font-size: var(--t-2);
+	font-stretch: 100%;
+	font-weight: 600;
+}
+
+.cartao-link {
+	color: var(--texto);
+}
+
+.cartao-link::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+}
+
+.cartao-link:focus-visible {
+	outline: none;
+	color: var(--marca);
+	background-size: 100% var(--traco);
+}
+
+@media (hover: hover) {
+	.cartao:hover {
+		border-color: var(--eixo);
+	}
+
+	.cartao:hover .cartao-link {
+		color: var(--marca);
+		background-size: 100% var(--traco);
+	}
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+	.cartao:hover::before {
+		opacity: 1;
+	}
+
+	.cartao::before,
+	.cartao {
+		transition:
+			opacity var(--dur-media) var(--curva),
+			border-color var(--dur-curta) var(--curva);
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.cartao-link {
+		transition:
+			color var(--dur-curta) var(--curva),
+			background-size var(--dur-media) var(--curva);
+	}
+}
+
+/* Tabelas de artigo: linhas pares na superfície, cabeçalho com fio de eixo. */
 table.zebra > tbody > tr:nth-child(even) {
-	background: var(--faixa);
+	background: var(--superficie);
 }
 
 table.zebra {
@@ -210,21 +317,72 @@ table.zebra td {
 	vertical-align: top;
 }
 
-/* Colunas ---: do Markdown saem com style="text-align: right" inline, que vence o left acima. */
-
 table.zebra th {
 	font-family: var(--fonte-titulo);
 	font-weight: 600;
 }
 
 table.zebra thead th {
-	background: var(--tarja);
-	border-bottom: var(--traco) solid var(--guia);
+	border-bottom: var(--traco) solid var(--eixo);
+}
+
+/*
+ * Mira: sobre o gráfico da home, o cursor é a cruz de leitura do gráfico. Só com mouse
+ * (pointer: fine), sem prefers-reduced-motion, depois que o script liga .com-mira no <html>, e
+ * só enquanto o cursor está sobre a área do gráfico (.mira-no-grafico). Fora dela, o cursor do
+ * sistema: seta, mão nos links, I para selecionar texto.
+ */
+.mira {
+	display: none;
+}
+
+html.mira-no-grafico,
+html.mira-no-grafico * {
+	cursor: none;
+}
+
+html.com-mira .mira {
+	display: block;
+	position: fixed;
+	left: 0;
+	top: 0;
+	z-index: 40;
+	pointer-events: none;
+	width: 0;
+	height: 0;
+	opacity: 0;
+	transition: opacity var(--dur-curta) var(--curva);
+}
+
+html.com-mira .mira.visivel {
+	opacity: 1;
+}
+
+/* Cruz de 22px com centro vazado, contornada na cor do fundo para não sumir sobre pontos ou marca. */
+.mira-cruz {
+	position: absolute;
+	left: 0;
+	top: 0;
+	translate: -50% -50%;
+	width: 22px;
+	height: 22px;
+	background:
+		linear-gradient(var(--marca), var(--marca)) 0 50% / 8px var(--traco) no-repeat,
+		linear-gradient(var(--marca), var(--marca)) 100% 50% / 8px var(--traco) no-repeat,
+		linear-gradient(var(--marca), var(--marca)) 50% 0 / var(--traco) 8px no-repeat,
+		linear-gradient(var(--marca), var(--marca)) 50% 100% / var(--traco) 8px no-repeat;
+	filter: drop-shadow(1px 0 0 var(--fundo)) drop-shadow(-1px 0 0 var(--fundo))
+		drop-shadow(0 1px 0 var(--fundo)) drop-shadow(0 -1px 0 var(--fundo));
+	transition: scale var(--dur-curta) var(--curva);
+}
+
+.mira.pressionada .mira-cruz {
+	scale: 0.75;
 }
 
 /*
  * Movimento: só com prefers-reduced-motion: no-preference.
- * Com reduce, os estados mudam na hora (cor, sublinhado, faixa acesa) e nada se desloca.
+ * Com reduce, os estados mudam na hora e nada se desloca.
  */
 @media (prefers-reduced-motion: no-preference) {
 	html {
@@ -238,25 +396,31 @@ table.zebra thead th {
 	}
 
 	/*
-	 * Troca de página: crossfade curto de opacidade, sem deslocamento (vale para ir e para voltar).
-	 * Só o grupo root, sem view-transition-name na tarja: os pixels iguais da tarja ficam parados no
-	 * crossfade, e a tarja maior da home não é esticada até a menor das internas.
-	 * Usa as animações de fade padrão do navegador; aqui só a duração e a curva.
+	 * Troca de página entre documentos (sem roteador no cliente). O cabeçalho tem nome próprio e
+	 * fica parado; o conteúdo antigo apaga rápido e o novo sobe 1rem enquanto aparece.
 	 */
 	@view-transition {
 		navigation: auto;
 	}
 
-	::view-transition-old(root),
+	::view-transition-old(root) {
+		animation: sair-pagina var(--dur-curta) var(--curva) both;
+	}
+
 	::view-transition-new(root) {
-		animation-duration: var(--dur-ficha);
-		animation-timing-function: var(--curva);
+		animation: entrar-pagina var(--dur-entrada) var(--curva) both;
 	}
 }
 
-/* Carregamento da home: as faixas são projetadas de cima para baixo. */
-@keyframes projetar-faixas {
+@keyframes sair-pagina {
+	to {
+		opacity: 0;
+	}
+}
+
+@keyframes entrar-pagina {
 	from {
-		clip-path: inset(0 0 100% 0);
+		opacity: 0;
+		translate: 0 1rem;
 	}
 }

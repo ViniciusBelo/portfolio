@@ -1,111 +1,536 @@
 ---
 import Base from '../layouts/Base.astro';
 import ListaDePosts from '../components/ListaDePosts.astro';
+import ListaDeProjetos from '../components/ListaDeProjetos.astro';
 import FraseContato from '../components/FraseContato.astro';
-import { getPosts, url } from '../lib/site';
+import { SITE, getPosts, getProjetos, url } from '../lib/site';
 
 const posts = await getPosts();
-const recentes = posts.slice(0, 5);
+const recentes = posts.slice(0, 6);
+const projetos = await getProjetos();
+
+// O nome é dividido em letras no servidor: cada letra é uma barra que entra e reage ao cursor.
+let indice = 0;
+const palavras = SITE.author.split(' ').map((p) => [...p].map((letra) => ({ letra, i: indice++ })));
+
+// O número de cada etapa (data-medida) é calculado da própria amostra em src/scripts/amostra.ts.
+const etapas = [
+	{
+		estado: 'pergunta',
+		titulo: 'Pergunta',
+		texto: 'Tudo parte de uma pergunta escrita antes de abrir os dados. Ela decide o que procurar e quando a análise terminou.',
+	},
+	{
+		estado: 'dados',
+		titulo: 'Dados',
+		texto: 'Saber de onde os dados vieram, que período cobrem e o que ficou de fora evita conclusões maiores do que eles permitem.',
+	},
+	{
+		estado: 'limpeza',
+		titulo: 'Limpeza',
+		texto: 'Duplicatas, valores faltando e erros de digitação saem da tabela. Cada linha removida fica registrada, com o motivo.',
+	},
+	{
+		estado: 'analise',
+		titulo: 'Análise',
+		texto: 'Só então entra o método, aplicado às linhas que sobraram. Os números saem do cálculo.',
+	},
+	{
+		estado: 'comunicacao',
+		titulo: 'Comunicação',
+		texto: 'O resultado vira um gráfico e um texto curto, que dizem também até onde ele vale.',
+	},
+];
 ---
 
 <Base>
-	{/* O nome (h1) está na tarja do cabeçalho, em Base.astro. */}
-	<div class="folha">
-		<div class="formulario">
-			<p>
-				Estou entrando na área de análise de dados. Aqui publico análises feitas do começo ao fim: a
-				pergunta, os dados, o método, o que encontrei e até onde o resultado vale.
+	<div class="palco">
+		{/* A amostra: pontos de exemplo desenhados por src/scripts/amostra.ts. Sem JS, não aparece. */}
+		<canvas class="amostra amostra-abertura" aria-hidden="true"></canvas>
+		<canvas class="amostra amostra-fixa" aria-hidden="true"></canvas>
+
+		<section class="abertura" data-estado="dispersao" aria-labelledby="nome">
+			{/* Legenda do gráfico, acima dele, presa à margem esquerda. Só existe com JS. */}
+			<div class="legenda">
+				<p>
+					Os pontos são uma amostra de exemplo, gerada no seu navegador.{' '}
+					<span class="so-mouse">Passe o mouse para ajustar uma reta aos mais próximos.</span>
+				</p>
+				<fieldset class="serie">
+					<legend>Cor dos pontos</legend>
+					<label><input type="radio" name="serie" value="" checked /><span class="amostra-cor azul"></span>Azul</label>
+					<label><input type="radio" name="serie" value="lilas" /><span class="amostra-cor lilas"></span>Lilás</label>
+					<label><input type="radio" name="serie" value="verde" /><span class="amostra-cor verde"></span>Verde</label>
+				</fieldset>
+			</div>
+
+			{/* Espaço do gráfico: src/scripts/amostra.ts desenha a dispersão entre o topo deste bloco e o nome. */}
+			<div class="grafico-area" aria-hidden="true"></div>
+
+			<h1 class="nome" id="nome">
+				<span class="visually-hidden">{SITE.author}</span>
+				<span class="letras" aria-hidden="true">
+					{
+						palavras.map((letras) => (
+							<span class="palavra">
+								{letras.map(({ letra, i }) => (
+									<span class="letra" style={`--i: ${i}`}>
+										{letra}
+									</span>
+								))}
+							</span>
+						))
+					}
+				</span>
+			</h1>
+
+			<p class="apresentacao">
+				Estou entrando na área de análise de dados e aberto a vagas de entrada.{' '}
+				<FraseContato />
 			</p>
-			<p>
-				Estou aberto a vagas de entrada em análise de dados. <FraseContato />
-			</p>
-		</div>
+		</section>
+
+		{
+			projetos.length > 0 && (
+				<section class="projetos secao" id="projetos" data-estado="dispersao" aria-labelledby="titulo-projetos">
+					<h2 class="titulo-secao" id="titulo-projetos">
+						Projetos
+					</h2>
+					<ListaDeProjetos projetos={projetos} />
+				</section>
+			)
+		}
+
+		<section class="fluxo secao" aria-labelledby="titulo-fluxo">
+			<div class="fluxo-cabeca" data-estado="pergunta">
+				<h2 class="titulo-secao" id="titulo-fluxo">O caminho de uma análise</h2>
+				<p>
+					Cada análise publicada aqui passa por estas cinco etapas.{' '}
+					<span class="so-js">Ao rolar, os mesmos pontos do topo mostram cada uma.</span>
+				</p>
+			</div>
+			<ol class="etapas">
+				{
+					etapas.map((e, i) => (
+						<li class="etapa" data-estado={e.estado}>
+							<div class="etapa-texto">
+								<span class="etapa-numero" aria-hidden="true">
+									{i + 1}
+								</span>
+								<h3>{e.titulo}</h3>
+								<p>{e.texto}</p>
+								<p class="etapa-medida" data-medida={e.estado}></p>
+							</div>
+						</li>
+					))
+				}
+			</ol>
+		</section>
 	</div>
 
-	{
-		posts.length > 0 && (
-			<section class="recentes" aria-labelledby="titulo-recentes">
-				<h2 id="titulo-recentes">Análises publicadas</h2>
-				<ListaDePosts posts={recentes} nivel={3} />
-				{posts.length > recentes.length && (
-					<p class="todas">
-						<a href={url('/posts/')}>Ver todas as {posts.length} análises</a>
-					</p>
-				)}
-			</section>
-		)
-	}
+	<section class="analises secao" aria-labelledby="titulo-analises">
+		<h2 class="titulo-secao" id="titulo-analises">Análises</h2>
+		<ListaDePosts posts={recentes} nivel={3} />
+		{
+			posts.length > recentes.length && (
+				<p class="todas">
+					<a href={url('/posts/')}>Ver todas as {posts.length} análises</a>
+				</p>
+			)
+		}
+	</section>
+
+	<div class="mira" aria-hidden="true"><span class="mira-cruz"></span></div>
 </Base>
 
+<script>
+	import { ligarAmostra } from '../scripts/amostra';
+	import { ligarNome } from '../scripts/nome';
+	import { ligarMira } from '../scripts/mira';
+
+	ligarNome();
+	const amostra = ligarAmostra();
+	if (amostra) ligarMira(amostra.dentro);
+
+	// Legenda que também é controle: a cor escolhida vale para o site todo e fica guardada.
+	const raiz = document.documentElement;
+	const radios = document.querySelectorAll<HTMLInputElement>('.serie input');
+	radios.forEach((r) => {
+		r.checked = r.value === (raiz.dataset.serie ?? '');
+		r.addEventListener('change', () => {
+			if (r.value) raiz.dataset.serie = r.value;
+			else delete raiz.dataset.serie;
+			try {
+				localStorage.setItem('serie', r.value);
+			} catch {}
+			dispatchEvent(new Event('serie'));
+		});
+	});
+</script>
+
 <style>
+	/* ---------- Abertura: o nome sobre a amostra ---------- */
+
 	/*
-	 * Um quadro da microficha: o texto de apresentação impresso sobre as faixas, logo abaixo da tarja.
-	 * O texto alinha na margem do nome; a faixa sangra --recuo-faixa para fora dos dois lados.
+	 * Contêiner único da home: tudo (legenda, gráfico, nome, seções) fica numa coluna de
+	 * --pagina centralizada, alinhado à esquerda dentro dela. O cabeçalho usa a mesma coluna.
 	 */
-	.folha {
+	.abertura,
+	.secao {
 		max-width: var(--pagina);
-		margin: var(--vao) auto 0;
+		margin-inline: auto;
 		padding-inline: var(--margem);
 	}
 
-	/*
-	 * Texto sobre as faixas: cada faixa cobre exatamente três linhas.
-	 * Sem padding vertical: um padding inferior abria uma faixa vazia sob o último parágrafo.
-	 */
-	.formulario {
-		position: relative;
-		isolation: isolate;
-		max-width: calc(var(--medida-texto) + 2 * var(--recuo-faixa));
-		margin-inline: calc(var(--recuo-faixa) * -1);
-		font-size: var(--t-1);
-		line-height: var(--linha);
-		padding: 0 var(--recuo-faixa);
-		padding-bottom: 0;
+	/* Abertura compacta: legenda, gráfico, nome e uma frase. Os projetos aparecem logo abaixo. */
+	.abertura {
+		padding-block: 1rem 0;
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
 	}
 
-	/* As faixas ficam numa camada própria, atrás do texto, para poderem ser projetadas sem mexer no texto. */
-	.formulario::before {
+	/* A altura reservada para a dispersão. Sem JS, não existe (nem a legenda). */
+	.grafico-area {
+		height: clamp(9.5rem, 24svh, 12.5rem);
+	}
+
+	html:not(.js) .grafico-area {
+		display: none;
+	}
+
+	.nome {
+		font-size: var(--t-6);
+		font-stretch: 125%;
+		font-weight: 700;
+		line-height: 1;
+		letter-spacing: var(--aperto);
+	}
+
+	.letras {
+		display: flex;
+		flex-wrap: wrap;
+		column-gap: 0.3em;
+		row-gap: 0.12em;
+	}
+
+	/* Cada palavra apoiada num eixo x; cada letra é uma barra com a marca do eixo embaixo. */
+	.palavra {
+		display: inline-block;
+		white-space: nowrap;
+		padding-bottom: 0.1em;
+		background: linear-gradient(var(--eixo), var(--eixo)) no-repeat 0 100% / 100% var(--traco);
+	}
+
+	.letra {
+		display: inline-block;
+		position: relative;
+		transform-origin: 50% 100%;
+		scale: 1 calc(1 + 0.25 * var(--k, 0));
+		color: color-mix(in oklab, var(--texto), var(--ponto) calc(var(--k, 0) * 100%));
+	}
+
+	.letra::after {
 		content: '';
 		position: absolute;
-		inset: 0;
-		z-index: -1;
-		background-image: repeating-linear-gradient(
-			to bottom,
-			var(--faixa) 0 var(--faixa-altura),
-			transparent var(--faixa-altura) calc(var(--faixa-altura) * 2)
-		);
+		left: 50%;
+		bottom: -0.1em;
+		width: var(--traco);
+		height: 0.09em;
+		background: var(--eixo);
 	}
 
-	/*
-	 * Único momento orquestrado do site, uma vez por carregamento da home (680ms no total):
-	 * as faixas descem por baixo do texto, como a ficha projetada na leitora.
-	 * O texto nunca se mexe nem fica invisível; sem CSS de movimento, tudo já está no lugar.
-	 */
 	@media (prefers-reduced-motion: no-preference) {
-		.formulario::before {
-			animation: projetar-faixas var(--dur-varredura) var(--curva) var(--atraso-varredura) both;
+		/* Carga: o eixo se desenha e as letras sobem como barras, uma depois da outra (cerca de 1,3 s). */
+		.palavra {
+			animation: eixo-desenha var(--dur-entrada) var(--curva) backwards;
+		}
+
+		.letra {
+			animation: letra-sobe var(--dur-entrada) var(--curva-mola) backwards;
+			animation-delay: calc(180ms + var(--i) * var(--passo-letra));
+			transition:
+				scale var(--dur-media) var(--curva-mola),
+				color var(--dur-media) var(--curva);
 		}
 	}
 
-	.formulario p {
-		margin: 0 0 var(--linha);
+	@keyframes eixo-desenha {
+		from {
+			background-size: 0 var(--traco);
+		}
+	}
+
+	@keyframes letra-sobe {
+		from {
+			clip-path: inset(100% -20% -30% -20%);
+			translate: 0 0.2em;
+		}
+		to {
+			clip-path: inset(-20% -20% -30% -20%);
+			translate: 0 0;
+		}
+	}
+
+	.apresentacao {
 		max-width: var(--medida-texto);
+		margin: 0.25rem 0 0;
 	}
 
-	.formulario p:last-child {
-		margin-bottom: 0;
+	/*
+	 * Legenda do gráfico, acima dele, como a linha de fonte de um gráfico de jornal: diz o que são
+	 * os pontos e deixa trocar a cor da série. Só existe com JS.
+	 */
+	.legenda {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.25rem 1.5rem;
+		font-family: var(--fonte-titulo);
+		font-size: var(--t-0);
+		line-height: 1.5;
+		color: var(--texto-suave);
 	}
 
-	.recentes {
-		max-width: var(--pagina);
-		margin: var(--vao) auto 0;
-		padding-inline: var(--margem);
+	.legenda p {
+		margin: 0;
+		max-width: 46rem;
 	}
 
-	.recentes h2 {
-		font-size: var(--t-3);
-		margin-bottom: var(--vao-curto);
+	.so-mouse {
+		display: none;
 	}
+
+	@media (pointer: fine) and (hover: hover) and (prefers-reduced-motion: no-preference) {
+		.so-mouse {
+			display: inline;
+		}
+	}
+
+	html:not(.js) :is(.legenda, .so-js, .amostra) {
+		display: none;
+	}
+
+	.serie {
+		border: 0;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.25rem 1rem;
+	}
+
+	.serie legend {
+		float: left;
+		padding: 0;
+		margin-right: 0.25rem;
+	}
+
+	.serie label {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		color: var(--texto);
+		padding-block: 0.25rem;
+	}
+
+	.serie input {
+		position: absolute;
+		opacity: 0;
+		width: 1px;
+		height: 1px;
+	}
+
+	.amostra-cor {
+		width: 0.9rem;
+		height: 0.9rem;
+		border-radius: 50%;
+		outline: var(--traco) solid transparent;
+		outline-offset: 2px;
+	}
+
+	.amostra-cor.azul {
+		background: var(--ponto-azul);
+	}
+
+	.amostra-cor.lilas {
+		background: var(--ponto-lilas);
+	}
+
+	.amostra-cor.verde {
+		background: var(--ponto-verde);
+	}
+
+	.serie input:checked + .amostra-cor {
+		outline-color: var(--texto);
+	}
+
+	.serie input:focus-visible + .amostra-cor {
+		outline: 3px solid var(--marca);
+	}
+
+	/* ---------- A amostra: um canvas que rola com a abertura e um fixo para o fluxo ---------- */
+
+	.amostra {
+		left: 0;
+		width: 100%;
+		z-index: -1;
+		pointer-events: none;
+	}
+
+	/* Posicionado no body (topo da página): a dispersão rola junto com o nome. */
+	.amostra-abertura {
+		position: absolute;
+		top: 0;
+		height: 100svh;
+	}
+
+	.amostra-fixa {
+		position: fixed;
+		top: 0;
+		height: 100lvh;
+		opacity: 0;
+	}
+
+	.amostra-fixa.visivel {
+		opacity: 1;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.amostra-fixa {
+			transition: opacity var(--dur-media) var(--curva);
+		}
+	}
+
+	/* ---------- O caminho de uma análise ---------- */
+
+	/* ---------- Projetos: logo depois da abertura ---------- */
+
+	.projetos {
+		margin-top: calc(var(--linha) * 1.5);
+		scroll-margin-top: var(--linha);
+	}
+
+	.projetos .titulo-secao {
+		margin-bottom: 1.25rem;
+	}
+
+	.fluxo,
+	.analises {
+		margin-top: var(--vao-largo);
+	}
+
+	.fluxo-cabeca {
+		max-width: 27rem;
+	}
+
+	.fluxo-cabeca p {
+		margin: 0;
+	}
+
+	.etapas {
+		list-style: none;
+		margin: var(--vao) 0 0;
+		padding: 0;
+		max-width: 27rem;
+		display: grid;
+		gap: var(--vao-curto);
+	}
+
+	.etapa-texto {
+		display: grid;
+		grid-template-columns: 2.5rem 1fr;
+		column-gap: 1rem;
+		align-items: baseline;
+	}
+
+	.etapa-numero {
+		grid-row: span 2;
+		align-self: start;
+		display: grid;
+		place-items: center;
+		width: 2.5rem;
+		height: 2.5rem;
+		border: var(--traco) solid var(--eixo);
+		border-radius: 50%;
+		font-family: var(--fonte-titulo);
+		font-weight: 700;
+		color: var(--texto);
+	}
+
+	.etapa h3 {
+		font-size: var(--t-2);
+	}
+
+	.etapa p {
+		grid-column: 2;
+		margin: 0.35rem 0 0;
+	}
+
+	/* O número da etapa, calculado da amostra. Sem JS fica vazio e não aparece. */
+	.etapa .etapa-medida {
+		margin-top: 0.6rem;
+		font-family: var(--fonte-titulo);
+		font-size: var(--t-0-5);
+		line-height: 1.5;
+		color: var(--texto-suave);
+	}
+
+	.etapa-medida:empty {
+		display: none;
+	}
+
+	/* A etapa que está no meio da tela é a que a amostra mostra: o número acende na cor da série. */
+	.etapa.atual .etapa-numero {
+		background: var(--ponto);
+		border-color: var(--ponto);
+		color: var(--fundo);
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.etapa-numero {
+			transition:
+				background-color var(--dur-media) var(--curva),
+				border-color var(--dur-media) var(--curva),
+				color var(--dur-media) var(--curva);
+		}
+	}
+
+	/* Com JS, cada etapa ocupa boa parte da tela: é a rolagem que conduz a amostra. */
+	:global(html.js) .etapas {
+		gap: 0;
+	}
+
+	:global(html.js) .etapa {
+		min-height: 80svh;
+		display: flex;
+		align-items: center;
+	}
+
+	:global(html.js) .etapa:last-child {
+		min-height: 60svh;
+	}
+
+	/* Em tela estreita o gráfico fica na metade de cima e o texto passa por baixo, numa placa. */
+	@media (max-width: 60rem) {
+		:global(html.js) .etapa,
+		:global(html.js) .etapa:last-child {
+			min-height: 95svh;
+			align-items: flex-end;
+			padding-bottom: 8svh;
+		}
+
+		:global(html.js) .etapa-texto {
+			background: var(--superficie);
+			border: 1px solid var(--grade);
+			border-radius: var(--raio);
+			padding: 1rem;
+			width: 100%;
+		}
+	}
+
+	/* ---------- Análises ---------- */
 
 	.todas {
 		margin: var(--vao-curto) 0 0;

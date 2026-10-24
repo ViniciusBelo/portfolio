@@ -68,13 +68,13 @@ const { title, description, date, tags, draft, cover, coverAlt } = post.data;
 		font-size: var(--t-1-5);
 		line-height: 1.5;
 		font-style: italic;
-		color: var(--luz-suave);
+		color: var(--texto-suave);
 		margin: 0;
 	}
 
 	.dados {
 		margin: 1.25rem 0 0;
-		color: var(--luz-suave);
+		color: var(--texto-suave);
 		font-size: var(--t-0);
 	}
 
@@ -140,7 +140,7 @@ const { title, description, date, tags, draft, cover, coverAlt } = post.data;
 
 	.texto :global(blockquote) {
 		padding: 0.25rem 0 0.25rem 1.25rem;
-		border-left: calc(var(--traco) * 2) solid var(--guia);
+		border-left: calc(var(--traco) * 2) solid var(--eixo);
 		font-style: italic;
 	}
 
@@ -148,7 +148,7 @@ const { title, description, date, tags, draft, cover, coverAlt } = post.data;
 		border: 0;
 		margin-block: 3rem;
 		height: var(--traco);
-		background: var(--tarja);
+		background: var(--grade);
 	}
 
 	/*
@@ -166,7 +166,7 @@ const { title, description, date, tags, draft, cover, coverAlt } = post.data;
 		caption-side: bottom;
 		text-align: left;
 		padding-top: 0.6rem;
-		color: var(--luz-suave);
+		color: var(--texto-suave);
 		font-size: var(--t-0);
 	}
 
@@ -177,14 +177,14 @@ const { title, description, date, tags, draft, cover, coverAlt } = post.data;
 	}
 
 	.texto :global(:not(pre) > code) {
-		background: var(--faixa);
+		background: var(--superficie);
 		padding: 0.1em 0.3em;
 	}
 
-	/* O Shiki não grava fundo no <pre> (transformer em astro.config.mjs); o fundo é o do filme. */
+	/* O Shiki não grava fundo no <pre> (transformer em astro.config.mjs); o fundo é o da página. */
 	.texto :global(pre) {
-		background: var(--filme);
-		border-left: calc(var(--traco) * 2) solid var(--guia);
+		background: var(--fundo);
+		border-left: calc(var(--traco) * 2) solid var(--eixo);
 		padding: 1rem 1.25rem;
 		overflow-x: auto;
 		line-height: 1.55;
@@ -210,7 +210,7 @@ const { title, description, date, tags, draft, cover, coverAlt } = post.data;
 	.texto :global(p > img + em),
 	.texto :global(p:has(> img:only-child) + p > em:only-child) {
 		display: block;
-		color: var(--luz-suave);
+		color: var(--texto-suave);
 		font-size: var(--t-0);
 		margin-top: 0.6rem;
 	}

@@ -1,0 +1,220 @@
+---
+/*
+ * Cartões de projeto (src/content/projetos/). O cartão inteiro abre o repositório no GitHub.
+ * O projeto com `destaque: true` ocupa a coluna larga e, se tiver `etapas`, mostra o progresso
+ * como uma linha de células: cheia = etapa pronta, só contorno = etapa que falta (a mesma
+ * linguagem das linhas da tabela na amostra). É o progresso real do repositório, não ilustração.
+ */
+import { render, type CollectionEntry } from 'astro:content';
+
+interface Props {
+	projetos: CollectionEntry<'projetos'>[];
+}
+
+const { projetos } = Astro.props;
+
+const lista = (itens: string[]) =>
+	itens.length <= 1 ? (itens[0] ?? '') : `${itens.slice(0, -1).join(', ')} e ${itens.at(-1)}`;
+
+const cartoes = await Promise.all(
+	projetos.map(async (p) => {
+		const { Content } = await render(p);
+		const etapas = p.data.etapas ?? [];
+		const feitas = etapas.filter((e) => e.feita);
+		const faltam = etapas.filter((e) => !e.feita);
+		// Hífen que não quebra (e-commerce fica inteiro na linha em telas estreitas).
+		const titulo = p.data.title.replace(/(\p{L})-(\p{L})/gu, '$1\u2011$2');
+		const endereco = p.data.repo.replace(/^https?:\/\//, '').replace(/\/$/, '');
+		return { p, Content, etapas, feitas, faltam, endereco, titulo };
+	}),
+);
+---
+
+<ul class="projetos-lista">
+	{
+		cartoes.map(({ p, Content, etapas, feitas, faltam, endereco, titulo }) => (
+			<li class:list={['cartao', 'projeto', { destaque: p.data.destaque }]}>
+				<h3 class="cartao-titulo">
+					<a class="cartao-link traco-marca" href={p.data.repo}>
+						{titulo}
+					</a>
+				</h3>
+				<p class="endereco">{endereco}</p>
+
+				{p.data.status === 'em-andamento' ? (
+					<div class="progresso">
+						{etapas.length > 0 && (
+							<ol class="celulas" aria-hidden="true" style={`--total: ${etapas.length}`}>
+								{etapas.map((e) => (
+									<li class:list={['celula', { feita: e.feita }]} />
+								))}
+							</ol>
+						)}
+						<p class="status">
+							{etapas.length > 0 ? (
+								<>
+									Em andamento, {feitas.length} de {etapas.length} etapas prontas:{' '}
+									{lista(feitas.map((e) => e.nome))}. Faltam {lista(faltam.map((e) => e.nome))}.
+									{p.data.falta && <> {p.data.falta}</>}
+								</>
+							) : (
+								<>Em andamento.{p.data.falta && <> {p.data.falta}</>}</>
+							)}
+						</p>
+					</div>
+				) : (
+					<p class="status concluido">Concluído.</p>
+				)}
+
+				<p class="descricao">{p.data.description}</p>
+				<div class="perguntas">
+					<Content />
+				</div>
+				{p.data.ferramentas.length > 0 && (
+					<p class="ferramentas">Ferramentas: {lista(p.data.ferramentas)}.</p>
+				)}
+			</li>
+		))
+	}
+</ul>
+
+<script>
+	import { ligarGrade } from '../scripts/grade';
+	ligarGrade();
+</script>
+
+<style>
+	.projetos-lista {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: 1.25rem;
+		align-items: start;
+	}
+
+	/* O destaque fica na coluna larga; os outros projetos dividem a coluna estreita. */
+	@media (min-width: 52rem) {
+		.projetos-lista {
+			grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+		}
+
+		.destaque {
+			grid-row: span 3;
+		}
+	}
+
+	.projeto {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+	}
+
+	.projeto p {
+		margin: 0;
+	}
+
+	.endereco,
+	.status,
+	.ferramentas {
+		font-family: var(--fonte-titulo);
+		font-size: var(--t-0-5);
+		line-height: 1.5;
+	}
+
+	.projeto .endereco {
+		color: var(--texto-suave);
+		overflow-wrap: anywhere;
+		margin-top: -0.35rem;
+	}
+
+	.destaque .cartao-titulo {
+		font-size: clamp(var(--t-2), 2.6vw, var(--t-3));
+		font-stretch: 112%;
+		font-weight: 700;
+	}
+
+	/* Progresso: uma célula por etapa, na ordem. Cheia = pronta; contorno = falta. */
+	.progresso {
+		display: grid;
+		gap: 0.5rem;
+		margin-block: 0.4rem 0.2rem;
+	}
+
+	.celulas {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(var(--total), minmax(0, 1fr));
+		gap: 4px;
+		max-width: 26rem;
+	}
+
+	.celula {
+		height: 0.75rem;
+		border: var(--traco) solid var(--eixo);
+		border-radius: 2px;
+	}
+
+	.celula.feita {
+		background: var(--ponto);
+		border-color: var(--ponto);
+	}
+
+	.status {
+		color: var(--texto);
+		max-width: 34rem;
+	}
+
+	/* Concluído: um ponto cheio da série antes da palavra. */
+	.concluido::before {
+		content: '';
+		display: inline-block;
+		width: 0.6rem;
+		height: 0.6rem;
+		margin-right: 0.5rem;
+		border-radius: 50%;
+		background: var(--ponto);
+	}
+
+	.descricao {
+		max-width: var(--medida-texto);
+	}
+
+	/* Perguntas do projeto: cada item marcado por um ponto da série, como um dado. */
+	.perguntas :global(ul) {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: 0.25rem;
+	}
+
+	.perguntas :global(li) {
+		position: relative;
+		padding-left: 1.1rem;
+		max-width: var(--medida-texto);
+		line-height: 1.55;
+	}
+
+	.perguntas :global(li)::before {
+		content: '';
+		position: absolute;
+		left: 0;
+		top: 0.62em;
+		width: 0.42rem;
+		height: 0.42rem;
+		border-radius: 50%;
+		background: var(--ponto);
+	}
+
+	.perguntas :global(p) {
+		margin: 0;
+	}
+
+	.projeto .ferramentas {
+		color: var(--texto-suave);
+		margin-top: 0.2rem;
+	}
+</style>

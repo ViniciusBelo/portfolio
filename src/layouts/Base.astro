@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css';
-import { SITE, emailHref, getPosts, url } from '../lib/site';
-// Arquivo da Archivo (latin, eixo de largura) usado no nome, na navegação e nos títulos.
+import { SITE, emailHref, getPosts, getProjetos, url } from '../lib/site';
+// Arquivo da Archivo (latin, eixos de peso e largura) usado no nome, na navegação e nos títulos.
 // Pré-carregado para o nome não trocar de fonte depois de aparecer.
 import archivoLatinWdth from '@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url';
 
@@ -22,11 +22,14 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = image ? new URL(image, Astro.site).href : undefined;
 
 const path = Astro.url.pathname.replace(/\/$/, '');
-// Na home o nome é o h1 dentro da tarja; nas internas, a assinatura da tarja (o nome fica visível uma vez por página).
+// Na home o nome é o h1 do gráfico; nas internas, a assinatura do cabeçalho (o nome aparece uma vez por página).
 const naHome = path === url('/').replace(/\/$/, '');
 // Sem análise publicada, "Análises" sai da navegação e a frase sobre citação sai do rodapé.
 const temPosts = (await getPosts()).length > 0;
+// Projetos ficam na home (âncora #projetos); o link aparece quando há algum cadastrado.
+const temProjetos = (await getProjetos()).length > 0;
 const nav = [
+	...(temProjetos ? [{ href: url('/#projetos'), label: 'Projetos', match: '' }] : []),
 	...(temPosts ? [{ href: url('/posts/'), label: 'Análises', match: url('/posts') }] : []),
 	{ href: url('/sobre/'), label: 'Sobre', match: url('/sobre') },
 ];
@@ -44,7 +47,18 @@ const nav = [
 		{noindex && <meta name="robots" content="noindex" />}
 		<link rel="icon" type="image/svg+xml" href={url('/favicon.svg')} />
 		<link rel="preload" href={archivoLatinWdth} as="font" type="font/woff2" crossorigin />
-		<meta name="theme-color" content="#253e54" />
+		<meta name="theme-color" content="#0f1f28" />
+		{/* Antes da pintura: marca que há JS (para o fluxo da home reservar altura sem pular depois) e aplica a cor de série escolhida. */}
+		<script is:inline>
+			(function () {
+				var d = document.documentElement;
+				d.classList.add('js');
+				try {
+					var s = localStorage.getItem('serie');
+					if (s) d.dataset.serie = s;
+				} catch (e) {}
+			})();
+		</script>
 
 		<meta property="og:type" content={type} />
 		<meta property="og:locale" content="pt_BR" />
@@ -60,11 +74,11 @@ const nav = [
 	<body>
 		<a class="pular" href="#conteudo">Pular para o conteúdo</a>
 
-		<header class:list={['topo', { 'topo-home': naHome }]}>
+		<header class="topo">
 			<div class="topo-linha">
 				{
 					naHome ? (
-						<h1 class="nome">{SITE.author}</h1>
+						<span />
 					) : (
 						<a class="assinatura" href={url('/')} aria-label={`${SITE.author}, página inicial`}>
 							{SITE.author}
@@ -79,13 +93,16 @@ const nav = [
 									<a
 										class="traco-marca"
 										href={item.href}
-										aria-current={path.startsWith(item.match) ? 'page' : undefined}
+										aria-current={item.match && path.startsWith(item.match) ? 'page' : undefined}
 									>
 										{item.label}
 									</a>
 								</li>
 							))
 						}
+						<li>
+							<a class="contato" href={SITE.links.github} rel="me">GitHub</a>
+						</li>
 					</ul>
 				</nav>
 			</div>
@@ -105,10 +122,21 @@ const nav = [
 				{temPosts && <p>Textos e análises podem ser citados com link para a fonte.</p>}
 			</div>
 		</footer>
+
 	</body>
 </html>
 
 <style>
+	/* body é o contexto de empilhamento: o gráfico da home (z-index -1) fica entre o fundo e o texto. */
+	body {
+		position: relative;
+		z-index: 0;
+	}
+
+	.topo {
+		view-transition-name: topo;
+	}
+
 	.topo-linha,
 	.pe-linha {
 		max-width: var(--pagina);
@@ -116,33 +144,9 @@ const nav = [
 		padding: 1.1rem var(--margem);
 		display: flex;
 		flex-wrap: wrap;
-		align-items: baseline;
+		align-items: center;
 		justify-content: space-between;
 		gap: 0.75rem 2rem;
-	}
-
-	/*
-	 * Tarja de título da microficha: a faixa legível a olho nu no topo da ficha. Só no cabeçalho.
-	 * Sem view-transition-name: entra no crossfade da página inteira (ver global.css), então a tarja
-	 * alta da home e a baixa das internas trocam por opacidade, sem esticar o texto.
-	 */
-	.topo {
-		background: var(--tarja);
-	}
-
-	/*
-	 * Na home a tarja é o título da ficha: o nome (h1) e a navegação na mesma linha de base.
-	 * Abaixo dela começa a folha zebrada.
-	 */
-	.topo-home .topo-linha {
-		padding-block: var(--vao) var(--vao-curto);
-	}
-
-	.nome {
-		font-size: var(--t-5);
-		font-stretch: 125%;
-		line-height: 1;
-		overflow-wrap: break-word;
 	}
 
 	.assinatura {
@@ -150,7 +154,7 @@ const nav = [
 		font-weight: 700;
 		font-stretch: 112%;
 		font-size: var(--t-1);
-		color: var(--luz);
+		color: var(--texto);
 		text-decoration: none;
 		letter-spacing: var(--aperto);
 	}
@@ -162,18 +166,17 @@ const nav = [
 		padding: 0;
 		display: flex;
 		flex-wrap: wrap;
+		align-items: center;
 		gap: 0.25rem 1.5rem;
 	}
 
-	/* Navegação: cor e sublinhado trocam na hora (a corrida do traço fica só nos títulos da lista). */
 	nav a {
 		font-family: var(--fonte-titulo);
 		font-weight: 500;
 		font-stretch: 100%;
-		color: var(--luz);
+		color: var(--texto);
 		text-decoration: none;
 		padding-block: 0.2rem;
-		transition: none;
 	}
 
 	nav a:focus-visible,
@@ -181,13 +184,34 @@ const nav = [
 		color: var(--marca);
 	}
 
+	/* Contato sempre à mão, no canto de cima: o único botão contornado do cabeçalho. */
+	nav .contato {
+		display: inline-block;
+		padding: 0.3rem 0.9rem;
+		border: var(--traco) solid var(--marca);
+		border-radius: var(--raio);
+		color: var(--marca);
+	}
+
 	@media (hover: hover) {
 		nav a:hover {
 			color: var(--marca);
 		}
+
+		nav .contato:hover {
+			background: var(--marca);
+			color: var(--fundo);
+		}
 	}
 
-	/* Até 24rem (384px): vãos menores para nome + "Análises" + "Sobre" caberem numa linha em 360px. */
+	@media (prefers-reduced-motion: no-preference) {
+		nav .contato {
+			transition:
+				background-color var(--dur-curta) var(--curva),
+				color var(--dur-curta) var(--curva);
+		}
+	}
+
 	@media (max-width: 24rem) {
 		.topo-linha {
 			column-gap: 1rem;
@@ -203,13 +227,14 @@ const nav = [
 	}
 
 	.pe {
-		margin-top: calc(var(--vao) * 1.5);
+		margin-top: var(--vao-largo);
 	}
 
 	.pe-linha {
 		padding-block: 1.5rem 2.5rem;
 		font-size: var(--t-0);
-		color: var(--luz-suave);
+		color: var(--texto-suave);
+		justify-content: flex-start;
 	}
 
 	.pe-linha p {
