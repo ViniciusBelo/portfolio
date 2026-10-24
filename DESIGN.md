@@ -60,8 +60,8 @@ Papéis separados: azul (ou a série escolhida) = dado; amarelo = ação ou medi
 |  +-- destaque (3fr) ------------------+  +-- outro (2fr) -------------+          |
 |  | Análise do e-commerce brasileiro...|  | Dashboard de salários...   |          |
 |  | github.com/ViniciusBelo/...        |  | github.com/...             |          |
-|  | [##][##][  ][  ][  ][  ][  ]       |  | (o) Concluído.             |          |
-|  | Em andamento, 2 de 7 etapas...     |  | descrição, perguntas,      |          |
+|  | (o) Concluído.                     |  | (o) Concluído.             |          |
+|  | (células só se em andamento)       |  | descrição, perguntas,      |          |
 |  | descrição, perguntas, ferramentas  |  | ferramentas                |          |
 |  +------------------------------------+  +----------------------------+          |
 |  O caminho de uma análise   (etapas à esquerda, amostra à direita)               |
@@ -76,10 +76,10 @@ No fluxo, o gráfico fica à direita do texto, começando em `max(metade do cont
 
 ### Projetos
 
-- Content collection `projetos` (`src/content/projetos/*.md`, schema em `src/content.config.ts`): `title`, `description`, `repo`, `status` (`concluido` ou `em-andamento`), `ferramentas`, `ordem`, `destaque`, `date`, e os opcionais `etapas` (`{ nome, feita }`), `falta` e `draft`. O corpo do arquivo é a lista de perguntas do projeto.
+- Content collection `projetos` (`src/content/projetos/*.md`, schema em `src/content.config.ts`): `title`, `description`, `repo`, `status` (`concluido` ou `em-andamento`), `ferramentas`, `ordem`, `destaque`, `date`, e os opcionais `etapas` (`{ nome, feita }`), `falta` e `draft`. O corpo do arquivo é a lista de perguntas do projeto. A `description` tem uma frase curta: o que é e com quais dados; detalhes ficam no README do repositório.
 - Cartão (`src/components/ListaDeProjetos.astro`): título (link para o repositório que cobre o cartão), endereço do repositório em `--texto-suave`, status, descrição, perguntas (marcador = ponto da série, como um dado), ferramentas em frase. A grade acende sob o mouse (o mesmo cartão-plano das análises, agora em `global.css`, script em `src/scripts/grade.ts`); com teclado, o contorno amarelo vai no cartão inteiro.
 - Hierarquia: o projeto com `destaque: true` fica na coluna larga (3fr contra 2fr), com título maior. Os cartões não são iguais de propósito.
-- **Progresso honesto:** em andamento com `etapas`, uma linha de células, uma por etapa (no Olist, uma por notebook do repositório): cheia na cor da série = pronta, só contorno = falta. É a mesma linguagem das linhas da tabela na amostra (linha removida = contorno). Embaixo, a frase com os números ("Em andamento, 2 de 7 etapas prontas: ... Faltam ..."); as células são `aria-hidden` e a frase leva a informação. Não é ilustração: é o estado real do repositório; atualize `feita` quando cada notebook sair. Concluído: "Concluído." com um ponto cheio.
+- **Progresso honesto:** em andamento com `etapas`, uma linha de células, uma por etapa (no Olist, uma por notebook do repositório): cheia na cor da série = pronta, só contorno = falta. É a mesma linguagem das linhas da tabela na amostra (linha removida = contorno). Embaixo, a frase com os números ("Em andamento, 2 de 7 etapas prontas: ... Faltam ..."); as células são `aria-hidden` e a frase leva a informação. Não é ilustração: é o estado real do repositório; atualize `feita` quando cada notebook sair. Concluído: "Concluído." com um ponto cheio, sem células (testamos manter a linha toda cheia e foi descartado: com tudo pronto, as células viram uma barra de 100% que não informa nada, e o card fica mais longo).
 - Hífen que não quebra (U+2011) entre letras nos títulos, para "e-commerce" não partir no celular.
 - Navegação: "Projetos" (âncora `/#projetos`) aparece quando há algum projeto.
 
@@ -124,10 +124,10 @@ Só isto pode ser afirmado até o autor escrever mais: o nome (Vinicius Belo), q
 
 - **O nome aparece visível uma vez por página:** h1 da abertura na home (letras em `aria-hidden`, nome inteiro em texto oculto para leitores de tela); assinatura no cabeçalho das internas. Continua no `<title>`, em `author` e no `og:site_name`.
 - **"O caminho de uma análise"** descreve a estrutura de cada análise publicada (pergunta, dados, limpeza, análise, comunicação). É uma sequência real, por isso é numerada. Não cita ferramentas.
-- **Projetos (confirmados nos READMEs dos repositórios):** *Análise do e-commerce brasileiro com Python* (olist-ecommerce-analysis, em andamento: exploração inicial e limpeza/ETL prontas, 2 de 7 notebooks; nenhum resultado publicado ainda, não citar nenhum) e *Dashboard de salários na área de dados* (imersao-dados-alura, Imersão de Dados da Alura, concluído).
-- **Ferramentas:** só as que aparecem nos repositórios, citadas no cartão de cada projeto. A tabela do Sobre continua desligada (`MOSTRAR_FERRAMENTAS = false`) até haver análise publicada que mostre o uso.
+- **Projetos (confirmados nos READMEs dos repositórios):** *Análise do e-commerce brasileiro com Python* (olist-ecommerce-analysis, concluído: 7 notebooks e dashboard; os resultados citados no site são os do README do repositório e do post sobre atraso e nota) e *Dashboard de salários na área de dados* (imersao-dados-alura, Imersão de Dados da Alura, concluído).
+- **Ferramentas:** só as que aparecem nos repositórios, citadas no cartão de cada projeto. A tabela do Sobre continua desligada (`MOSTRAR_FERRAMENTAS = false`): já existe uma análise publicada, mas a tabela só liga junto com o texto do Sobre, e cada ferramenta precisa apontar para a análise que prova o uso.
 - **Contato:** `src/components/FraseContato.astro` se ajusta a `site.ts`. O botão "GitHub" fica sempre no canto de cima à direita. LinkedIn e e-mail só aparecem quando preenchidos.
-- **Sem posts:** "Análises" sai da navegação; a home e /posts/ mostram o cartão vazio (um plano com eixos e `n = 0`, "Nenhuma análise publicada ainda." e o link para o GitHub). Sem promessa de que algo está sendo escrito. O rodapé mostra só os contatos.
+- **Sem posts** (estado até 24/10/2026, quando saiu o primeiro post; vale de novo se todos os posts forem para rascunho): "Análises" sai da navegação; a home e /posts/ mostram o cartão vazio (um plano com eixos e `n = 0`, "Nenhuma análise publicada ainda." e o link para o GitHub). Sem promessa de que algo está sendo escrito. O rodapé mostra só os contatos.
 - **Com posts:** cartões em grade (`auto-fill`, mínimo 19rem), título, resumo, data e assuntos em frase; o link do título cobre o cartão.
 - **Checador:** `npm run build` roda `scripts/checar-placeholders.mjs` depois do `astro build`; falha com `SEU-PERFIL`, `exemplo.com` ou marcadores entre colchetes visíveis.
 

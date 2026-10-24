@@ -1,22 +1,22 @@
 ---
 title: Análise do e-commerce brasileiro com Python
-description: Dataset público da Olist, no Kaggle, com cerca de 100 mil pedidos em 9 tabelas, de setembro de 2016 a outubro de 2018. O caminho vai da limpeza dos dados brutos à segmentação de clientes.
+description: Cerca de 100 mil pedidos da Olist (2016 a 2018), da limpeza dos dados à segmentação de clientes, com um dashboard no fim.
 repo: https://github.com/ViniciusBelo/olist-ecommerce-analysis
-status: em-andamento
-ferramentas: [Python, Pandas, DuckDB, Plotly, scikit-learn, Streamlit]
+status: concluido
+ferramentas: [Python, Pandas, SQL (DuckDB), Plotly, scikit-learn, Streamlit]
 ordem: 1
 destaque: true
-date: 2026-06-21
-# Uma etapa por notebook do repositório, na ordem. Escreva como entra na frase (minúsculas).
+date: 2026-10-24
+# Uma etapa por notebook do repositório, na ordem, mais o dashboard. Escreva como entra na frase (minúsculas).
 etapas:
   - { nome: exploração inicial, feita: true }
   - { nome: limpeza com ETL, feita: true }
-  - { nome: receita }
-  - { nome: clientes }
-  - { nome: segmentação RFM }
-  - { nome: entregas }
-  - { nome: vendedores }
-falta: O dashboard em Streamlit vem depois.
+  - { nome: receita, feita: true }
+  - { nome: clientes, feita: true }
+  - { nome: segmentação RFM, feita: true }
+  - { nome: entregas, feita: true }
+  - { nome: vendedores, feita: true }
+  - { nome: dashboard, feita: true }
 ---
 
 - Quais clientes estão prestes a abandonar a plataforma?
